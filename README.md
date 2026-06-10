@@ -29,16 +29,17 @@ make BR2_EXTERNAL=../luckfox-nova-buildroot luckfox_nova_defconfig
 make            # first build takes a while (kernel + U-Boot + rootfs)
 ```
 
-Output: `buildroot/output/images/sdcard.img`
+Output: `buildroot/output/images/sdcard.img` and `emmc.img`
+(same system, different root PARTUUIDs so SD and eMMC installs can coexist)
 
 ## Flash
 
 ```bash
 # SD card (boots in preference to eMMC; remove the card to boot eMMC again)
-sudo dd if=output/images/sdcard.img of=/dev/sdX bs=4M conv=fsync
+sudo dd if=buildroot/output/images/sdcard.img of=/dev/sdX bs=4M conv=fsync
 
 # eMMC (via maskrom/loader mode + Rockchip upgrade_tool)
-sudo ./upgrade_tool wl 0 sdcard.img && sudo ./upgrade_tool rd
+sudo ./upgrade_tool wl 0 emmc.img && sudo ./upgrade_tool rd
 ```
 
 ## Notes
