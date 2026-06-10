@@ -23,7 +23,10 @@ BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="6.18.8"
 BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/patches/linux"
-BR2_LINUX_KERNEL_USE_ARCH_DEFAULT_CONFIG=y
+# Proven config: same one Armbian's rockchip64-current kernel uses on this
+# board (the arm64 defconfig + fragment combo produced timer-callback panics).
+BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/linux.config"
 BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/linux.fragment"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_INTREE_DTS_NAME="rockchip/rk3308-luckfox-nova"
