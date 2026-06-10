@@ -62,3 +62,6 @@ BR2_PACKAGE_HTOP=y
 
 # Entropy daemon: mainline has no RK3308 HW RNG and crng takes ~76s to init
 BR2_PACKAGE_HAVEGED=y
+
+# Ship the GPIO inspector (usr/sbin/gpiocheck)
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/rootfs-overlay"
