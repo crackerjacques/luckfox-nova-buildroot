@@ -7,9 +7,6 @@ BR2_cortex_a35=y
 # ftpmirror.gnu.org likes to redirect to dead mirrors - pin a reliable one
 BR2_GNU_MIRROR="https://mirrors.kernel.org/gnu"
 
-# This build host throws GCC ICEs at full parallelism; -j24 is proven safe
-BR2_JLEVEL=24
-
 # Toolchain: ARM's prebuilt aarch64 toolchain (much faster than building one)
 BR2_TOOLCHAIN_EXTERNAL=y
 BR2_TOOLCHAIN_EXTERNAL_ARM_AARCH64=y

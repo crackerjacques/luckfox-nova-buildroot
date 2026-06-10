@@ -17,6 +17,10 @@ cd "$(dirname "$0")"
 BR_BRANCH=2025.02.x
 IMAGE=luckfox-nova-br
 
+# Parallelism: JOBS=N ./build.sh   (this host throws GCC ICEs at full -j;
+# 24 is the proven-safe default, see the RG DS builds)
+JOBS="${JOBS:-24}"
+
 if [ ! -d buildroot ]; then
     echo "[INFO] cloning buildroot ($BR_BRANCH) ..."
     git clone --branch "$BR_BRANCH" https://gitlab.com/buildroot.org/buildroot.git buildroot
@@ -41,4 +45,4 @@ if [ ! -f buildroot/.config ]; then
     "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work luckfox_nova_defconfig
 fi
 
-exec "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work "$@"
+exec "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work BR2_JLEVEL="$JOBS" "$@"
