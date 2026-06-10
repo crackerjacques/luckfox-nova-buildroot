@@ -22,10 +22,8 @@ if [ ! -d buildroot ]; then
     git clone --branch "$BR_BRANCH" https://gitlab.com/buildroot.org/buildroot.git buildroot
 fi
 
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-    echo "[INFO] building Docker image '$IMAGE' ..."
-    docker build -t "$IMAGE" docker/
-fi
+# Cheap when cached; picks up Dockerfile changes automatically.
+docker build -q -t "$IMAGE" docker/ >/dev/null
 
 DOCKER_RUN=(docker run --rm -it \
     --user "$(id -u):$(id -g)" \

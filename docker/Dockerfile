@@ -11,8 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cpio \
         file \
         git \
+        libgnutls28-dev \
         libncurses-dev \
         libssl-dev \
+        uuid-dev \
         locales \
         patch \
         perl \
