@@ -9,18 +9,27 @@ Fully mainline stack for the Luckfox Nova — **no vendor SDK required**:
   microSD 1-bit, 100M ethernet RTL8201F@0, USB host/OTG, heartbeat LED)
 - Minimal rootfs (dropbear, DHCP on `end0`, root password: `nova`)
 
-## Build (on a Linux host)
+## Build
+
+The recommended path is the Docker wrapper (host distro agnostic; rolling
+distros like Arch routinely break buildroot's host packages):
+
+```bash
+./build.sh          # clones buildroot, builds the container, builds everything
+./build.sh menuconfig
+./build.sh shell    # poke around inside the build container
+```
+
+Or natively on a stable Linux host:
 
 ```bash
 git clone https://gitlab.com/buildroot.org/buildroot.git -b 2025.02.x
-git clone <this repo> luckfox-nova-buildroot
-
 cd buildroot
 make BR2_EXTERNAL=../luckfox-nova-buildroot luckfox_nova_defconfig
 make            # first build takes a while (kernel + U-Boot + rootfs)
 ```
 
-Output: `output/images/sdcard.img`
+Output: `buildroot/output/images/sdcard.img`
 
 ## Flash
 
