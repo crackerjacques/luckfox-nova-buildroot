@@ -68,3 +68,6 @@ BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/rootfs-
 
 # No autoboot countdown
 BR2_TARGET_UBOOT_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/uboot.fragment"
+
+# sftp server so modern scp (SFTP protocol) works against dropbear
+BR2_PACKAGE_GESFTPSERVER=y
