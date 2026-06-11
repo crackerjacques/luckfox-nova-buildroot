@@ -89,9 +89,12 @@ dc=$((period * duty / 100))
 [ -d "$chip/pwm0" ] || echo 0 > "$chip/export"
 [ -d "$chip/pwm0" ] || die "cannot export $name"
 
-# order matters: duty must stay below period at all times
+# order matters: duty must stay below period at all times, and polarity can
+# only be changed while disabled (boot-time register state is often inversed,
+# which made 0% read 3.3V and 100% read 0V)
 echo 0 > "$chip/pwm0/enable" 2>/dev/null
 echo 0 > "$chip/pwm0/duty_cycle" 2>/dev/null
+[ -f "$chip/pwm0/polarity" ] && echo normal > "$chip/pwm0/polarity" 2>/dev/null
 echo "$period" > "$chip/pwm0/period"
 echo "$dc" > "$chip/pwm0/duty_cycle"
 echo 1 > "$chip/pwm0/enable"
