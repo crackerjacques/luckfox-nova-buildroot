@@ -28,6 +28,12 @@ if [ "${RT:-0}" = 1 ]; then
     KCFG_FRAGS="$KCFG_FRAGS /work/board/luckfox/nova/linux-rt.fragment"
     echo "[INFO] PREEMPT_RT kernel build enabled"
 fi
+# DBG=1 -> debugobjects kernel: reports use-after-free timers with the
+# function that armed them (for the boot-time timer panic hunt)
+if [ "${DBG:-0}" = 1 ]; then
+    KCFG_FRAGS="$KCFG_FRAGS /work/board/luckfox/nova/linux-debug.fragment"
+    echo "[INFO] debugobjects kernel build enabled"
+fi
 
 if [ ! -d buildroot ]; then
     echo "[INFO] cloning buildroot ($BR_BRANCH) ..."
