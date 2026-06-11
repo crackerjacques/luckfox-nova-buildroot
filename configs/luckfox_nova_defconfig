@@ -75,3 +75,6 @@ BR2_PACKAGE_GESFTPSERVER=y
 # dtc on target: novaconfig compiles DT overlays on the device
 BR2_PACKAGE_DTC=y
 BR2_PACKAGE_DTC_PROGRAMS=y
+
+# cyclictest etc. for RT latency measurement
+BR2_PACKAGE_RT_TESTS=y

@@ -21,6 +21,14 @@ IMAGE=luckfox-nova-br
 # 24 is the proven-safe default, see the RG DS builds)
 JOBS="${JOBS:-24}"
 
+# RT=1 ./build.sh ...  -> PREEMPT_RT kernel (mainline RT, extra fragment).
+# Switching RT on/off needs: RT=1 ./build.sh linux-dirclean all
+KCFG_FRAGS="/work/board/luckfox/nova/linux.fragment"
+if [ "${RT:-0}" = 1 ]; then
+    KCFG_FRAGS="$KCFG_FRAGS /work/board/luckfox/nova/linux-rt.fragment"
+    echo "[INFO] PREEMPT_RT kernel build enabled"
+fi
+
 if [ ! -d buildroot ]; then
     echo "[INFO] cloning buildroot ($BR_BRANCH) ..."
     git clone --branch "$BR_BRANCH" https://gitlab.com/buildroot.org/buildroot.git buildroot
@@ -45,4 +53,4 @@ if [ ! -f buildroot/.config ]; then
     "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work luckfox_nova_defconfig
 fi
 
-exec "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work BR2_JLEVEL="$JOBS" "$@"
+exec "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work BR2_JLEVEL="$JOBS" BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$KCFG_FRAGS" "$@"

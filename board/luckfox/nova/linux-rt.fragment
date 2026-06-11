@@ -1,0 +1,8 @@
+# PREEMPT_RT (mainline since 6.12, no external patch needed).
+# Applied on top of linux.fragment when building with RT=1 ./build.sh
+CONFIG_EXPERT=y
+CONFIG_PREEMPT_RT=y
+# settle the preemption choice explicitly
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
