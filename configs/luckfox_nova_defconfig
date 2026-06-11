@@ -71,3 +71,7 @@ BR2_TARGET_UBOOT_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/
 
 # sftp server so modern scp (SFTP protocol) works against dropbear
 BR2_PACKAGE_GESFTPSERVER=y
+
+# dtc on target: novaconfig compiles DT overlays on the device
+BR2_PACKAGE_DTC=y
+BR2_PACKAGE_DTC_PROGRAMS=y
