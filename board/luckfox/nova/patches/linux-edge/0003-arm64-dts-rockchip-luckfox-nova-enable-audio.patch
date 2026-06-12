@@ -1,0 +1,60 @@
+From: Jack Heinlein <jaxxworkshop@gmail.com>
+Subject: [PATCH] arm64: dts: rockchip: luckfox-nova: enable the on-board mic / audio codec
+
+Wire the RK3308 internal audio codec to i2s_8ch_2 with a simple-audio-card.
+The board has an analog MEMS mic on MICP8/MICN8 (capture group 3) powered
+from MICBIAS2 (mic is rated 1.6-3.6V; 85% of AVDD 3.3V = 2.8V bias), plus
+an LM4890 speaker amp on LINEOUT_R (enable on GPIO0_C4, left for later).
+
+---
+--- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
+@@ -133,9 +133,36 @@
+ 		regulator-min-microvolt = <5000000>;
+ 		regulator-max-microvolt = <5000000>;
+ 		vin-supply = <&vcc5v0_sys>;
++	};
++
++	sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,name = "luckfox-nova";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,mclk-fs = <256>;
++		simple-audio-card,bitclock-master = <&sound_cpu>;
++		simple-audio-card,frame-master = <&sound_cpu>;
++
++		sound_cpu: simple-audio-card,cpu {
++			sound-dai = <&i2s_8ch_2>;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&codec>;
++		};
+ 	};
+ };
+ 
++/*
++ * The on-board analog MEMS mic feeds MICP8/MICN8 (capture group 3, so it
++ * shows up as channel 8 of an 8-channel recording) and is powered from
++ * MICBIAS2; the other 7 mic inputs go to the FPC audio header.
++ */
++&codec {
++	rockchip,micbias-avdd-percent = <85>;
++	status = "okay";
++};
++
+ &cpu0 {
+ 	cpu-supply = <&vdd_core>;
+ };
+@@ -164,6 +191,11 @@
+ 	status = "okay";
+ };
+ 
++/* Internally wired to the audio codec. */
++&i2s_8ch_2 {
++	status = "okay";
++};
++
+ &io_domains {
+ 	vccio0-supply = <&vcc_io>;
+ 	vccio1-supply = <&vcc_io>;

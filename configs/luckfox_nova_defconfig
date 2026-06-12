@@ -78,3 +78,9 @@ BR2_PACKAGE_DTC_PROGRAMS=y
 
 # cyclictest etc. for RT latency measurement
 BR2_PACKAGE_RT_TESTS=y
+
+# arecord/aplay/amixer for the on-board mic (RK3308 internal codec)
+BR2_PACKAGE_ALSA_UTILS=y
+BR2_PACKAGE_ALSA_UTILS_ALSAMIXER=y
+BR2_PACKAGE_ALSA_UTILS_AMIXER=y
+BR2_PACKAGE_ALSA_UTILS_APLAY=y
