@@ -7,6 +7,7 @@
 #   EDGE=1 ./build.sh            -> mainline 7.0.y kernel (Armbian edge config)
 #   RT=1 ./build.sh              -> PREEMPT_RT kernel
 #   DBG=1 ./build.sh             -> debugobjects + SLUB poison kernel
+#   HZ=1000 ./build.sh           -> kernel tick rate (100|250|300|1000, default 250)
 #   JOBS=40 ./build.sh           -> parallelism (default 24: GCC ICEs at full -j)
 #   ./build.sh menuconfig | linux-menuconfig | uboot-menuconfig | shell | <targets>
 #
@@ -48,6 +49,16 @@ if [ "${DBG:-0}" = 1 ] || [ "${DEBUG:-0}" = 1 ]; then
     KCFG_FRAGS="$KCFG_FRAGS $BRD/linux-debug.fragment"
     echo "[INFO] debugobjects kernel build enabled"
 fi
+if [ -n "${HZ:-}" ]; then
+    case "$HZ" in
+        100|250|300|1000) ;;
+        *) echo "[ERROR] HZ must be 100, 250, 300 or 1000"; exit 1 ;;
+    esac
+    # generated below once buildroot/output exists; the value is part of the
+    # file name so the flavor stamp notices a change and recleans the kernel
+    KCFG_FRAGS="$KCFG_FRAGS /work/buildroot/output/nova-hz-$HZ.fragment"
+    echo "[INFO] HZ=$HZ kernel build enabled"
+fi
 
 if [ ! -d buildroot ]; then
     echo "[INFO] cloning buildroot ($BR_BRANCH) ..."
@@ -72,6 +83,18 @@ fi
 # Later assignments win during defconfig processing, so the flavor lines
 # simply override the base ones.
 mkdir -p buildroot/output
+if [ -n "${HZ:-}" ]; then
+    {
+        for hz in 100 250 300 1000; do
+            if [ "$hz" = "$HZ" ]; then
+                echo "CONFIG_HZ_$hz=y"
+            else
+                echo "# CONFIG_HZ_$hz is not set"
+            fi
+        done
+        echo "CONFIG_HZ=$HZ"
+    } > "buildroot/output/nova-hz-$HZ.fragment"
+fi
 FLAVOR=buildroot/output/nova-flavor.defconfig
 {
     cat configs/luckfox_nova_defconfig

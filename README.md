@@ -24,6 +24,7 @@ distros like Arch routinely break buildroot's host packages):
 EDGE=1 ./build.sh    # mainline 7.0.y kernel instead of 6.18.y longterm
 RT=1 ./build.sh      # PREEMPT_RT kernel
 DBG=1 ./build.sh     # debugobjects + SLUB poison kernel (debugging only)
+HZ=1000 ./build.sh   # kernel tick rate: 100|250|300|1000 (default 250)
 JOBS=40 ./build.sh   # per-package make parallelism (default 24)
 ```
 
