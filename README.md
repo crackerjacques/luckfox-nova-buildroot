@@ -63,6 +63,15 @@ pwmtest    # test PWM
 gpiocheck  # check gpio
 ```
 
+## Board variants
+
+This config targets the plain **Luckfox Nova** (no wireless). The **Nova W**
+adds an AIC8800-based SDIO WiFi + UART BT module (U1 on the schematic);
+supporting it needs the out-of-tree `aic8800_fdrv` driver, firmware blobs,
+an SDIO node in the DTS and wpa_supplicant — planned as a separate flavor
+(e.g. `W=1 ./build.sh`) so that plain-Nova images stay free of the probe
+errors the all-in-one official image throws on boards without the module.
+
 ## Notes
 
 - **The microSD slot only has DAT0 usable** (verified on hardware with two
