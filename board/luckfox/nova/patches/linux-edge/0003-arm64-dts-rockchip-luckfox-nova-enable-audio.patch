@@ -7,15 +7,18 @@ from MICBIAS2 (mic is rated 1.6-3.6V; 85% of AVDD 3.3V = 2.8V bias), plus
 an LM4890 speaker amp on LINEOUT_R (enable on GPIO0_C4, left for later).
 
 The i2s_8ch_2 node in rk3308.dtsi lacks #sound-dai-cells, so set it here
-or simple-card cannot reference it.
+or simple-card cannot reference it. The MICBIAS2 supply is not part of
+any codec-internal DAPM path, so route it explicitly or the mic stays
+unpowered.
 
 ---
 --- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
-@@ -134,8 +134,35 @@
+@@ -133,9 +133,41 @@
+ 		regulator-min-microvolt = <5000000>;
  		regulator-max-microvolt = <5000000>;
  		vin-supply = <&vcc5v0_sys>;
- 	};
++	};
 +
 +	sound {
 +		compatible = "simple-audio-card";
@@ -24,6 +27,11 @@ or simple-card cannot reference it.
 +		simple-audio-card,mclk-fs = <256>;
 +		simple-audio-card,bitclock-master = <&sound_cpu>;
 +		simple-audio-card,frame-master = <&sound_cpu>;
++		simple-audio-card,widgets = "Microphone", "Onboard Mic";
++		/* the on-board mic's VDD comes from MICBIAS2; route it so DAPM
++		 * powers the bias whenever channel 8 captures */
++		simple-audio-card,routing = "Onboard Mic", "MICBIAS2",
++					    "MIC8", "Onboard Mic";
 +
 +		sound_cpu: simple-audio-card,cpu {
 +			sound-dai = <&i2s_8ch_2>;
@@ -32,7 +40,7 @@ or simple-card cannot reference it.
 +		simple-audio-card,codec {
 +			sound-dai = <&codec>;
 +		};
-+	};
+ 	};
  };
  
 +/*
@@ -48,7 +56,7 @@ or simple-card cannot reference it.
  &cpu0 {
  	cpu-supply = <&vdd_core>;
  };
-@@ -164,6 +191,12 @@
+@@ -164,6 +196,12 @@
  	status = "okay";
  };
  
