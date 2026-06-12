@@ -21,7 +21,7 @@ BR2_TARGET_GENERIC_GETTY_PORT="ttyS4"
 # Kernel: latest 6.18.y stable; bump the value as point releases appear
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION=y
-BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="6.18.8"
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="6.18.35"
 BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_LUCKFOX_NOVA_PATH)/board/luckfox/nova/patches/linux"
 # Proven config: same one Armbian's rockchip64-current kernel uses on this
 # board (the arm64 defconfig + fragment combo produced timer-callback panics).

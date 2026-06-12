@@ -23,6 +23,18 @@ JOBS="${JOBS:-24}"
 
 # RT=1 ./build.sh ...  -> PREEMPT_RT kernel (mainline RT, extra fragment).
 # Switching RT on/off needs: RT=1 ./build.sh linux-dirclean all
+# EDGE=1 ./build.sh ... -> mainline 7.0.y kernel (Armbian edge config base).
+# Default is the 6.18 longterm series.
+KVER="${KVER:-6.18.35}"
+KPATCHES=/work/board/luckfox/nova/patches/linux
+KCONF=/work/board/luckfox/nova/linux.config
+if [ "${EDGE:-0}" = 1 ]; then
+    KVER="${KVER_EDGE:-7.0.12}"
+    KPATCHES=/work/board/luckfox/nova/patches/linux-edge
+    KCONF=/work/board/luckfox/nova/linux-edge.config
+    echo "[INFO] edge kernel build enabled ($KVER)"
+fi
+
 KCFG_FRAGS="/work/board/luckfox/nova/linux.fragment"
 if [ "${RT:-0}" = 1 ]; then
     KCFG_FRAGS="$KCFG_FRAGS /work/board/luckfox/nova/linux-rt.fragment"
@@ -59,4 +71,20 @@ if [ ! -f buildroot/.config ]; then
     "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work luckfox_nova_defconfig
 fi
 
-exec "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work BR2_JLEVEL="$JOBS" BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$KCFG_FRAGS" "$@"
+# Force a clean kernel rebuild whenever the kernel flavor changes (version,
+# patches, config or fragments): incremental builds across config swaps have
+# produced subtly corrupted kernels (bogus timer callbacks at boot).
+SIG="$KVER $KPATCHES $KCONF $KCFG_FRAGS"
+STAMP=buildroot/output/.nova-kernel-sig
+if [ -d buildroot/output/build ] && [ "$(cat "$STAMP" 2>/dev/null)" != "$SIG" ]; then
+    echo "[INFO] kernel flavor changed -> linux-dirclean"
+    "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work linux-dirclean || true
+fi
+mkdir -p buildroot/output
+printf '%s' "$SIG" > "$STAMP"
+
+exec "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work BR2_JLEVEL="$JOBS" \
+    BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="$KVER" \
+    BR2_LINUX_KERNEL_PATCH="$KPATCHES" \
+    BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$KCONF" \
+    BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$KCFG_FRAGS" "$@"
