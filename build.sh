@@ -42,7 +42,7 @@ if [ "${RT:-0}" = 1 ]; then
 fi
 # DBG=1 -> debugobjects kernel: reports use-after-free timers with the
 # function that armed them (for the boot-time timer panic hunt)
-if [ "${DBG:-0}" = 1 ]; then
+if [ "${DBG:-0}" = 1 ] || [ "${DEBUG:-0}" = 1 ]; then
     KCFG_FRAGS="$KCFG_FRAGS /work/board/luckfox/nova/linux-debug.fragment"
     echo "[INFO] debugobjects kernel build enabled"
 fi
