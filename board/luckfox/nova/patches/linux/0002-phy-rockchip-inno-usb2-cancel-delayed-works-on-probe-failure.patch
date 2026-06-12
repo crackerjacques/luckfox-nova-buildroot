@@ -1,0 +1,82 @@
+From: Jack Heinlein <jaxxworkshop@gmail.com>
+Subject: [PATCH] phy: rockchip-inno-usb2: cancel port delayed works on probe failure
+
+The otg port init path arms otg_sm_work (via the extcon initial-state
+sync firing rockchip_otg_event, OTG_SCHEDULE_DELAY = 2*HZ). When a
+later step of the same probe returns -EPROBE_DEFER, the devm-allocated
+rockchip_usb2phy (which embeds the ports and their delayed works) is
+freed with the work's timer still queued. Two seconds later the timer
+wheel jumps through the function pointer of a timer living in freed,
+since-reused memory and the machine panics:
+
+  pc : <garbage heap address>
+  lr : call_timer_fn+0x3c/0x1a8
+  Call trace: __run_timers ... run_ktimerd
+
+Observed on RK3308B (Luckfox Nova) where the first usb2phy probe at
+~0.56s defers, the retry at ~0.79s succeeds, and the ghost timer from
+the first attempt fires at ~2.59s. Reproduces on 6.18.y and 7.0.y,
+easiest to hit with PREEMPT_RT.
+
+Register devm actions that cancel the works, so both the probe error
+paths and driver unbind tear the timers down before the memory goes
+away.
+
+---
+--- a/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
++++ b/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
+@@ -1247,6 +1247,13 @@
+ 	return 0;
+ }
+ 
++static void rockchip_usb2phy_host_port_cancel_work(void *data)
++{
++	struct rockchip_usb2phy_port *rport = data;
++
++	cancel_delayed_work_sync(&rport->sm_work);
++}
++
+ static int rockchip_usb2phy_host_port_init(struct rockchip_usb2phy *rphy,
+ 					   struct rockchip_usb2phy_port *rport,
+ 					   struct device_node *child_np)
+@@ -1260,6 +1267,12 @@
+ 	mutex_init(&rport->mutex);
+ 	INIT_DELAYED_WORK(&rport->sm_work, rockchip_usb2phy_sm_work);
+ 
++	ret = devm_add_action_or_reset(rphy->dev,
++				       rockchip_usb2phy_host_port_cancel_work,
++				       rport);
++	if (ret)
++		return ret;
++
+ 	ret = rockchip_usb2phy_port_irq_init(rphy, rport, child_np);
+ 	if (ret) {
+ 		dev_err(rphy->dev, "failed to setup host irq\n");
+@@ -1280,6 +1293,14 @@
+ 	return NOTIFY_DONE;
+ }
+ 
++static void rockchip_usb2phy_otg_port_cancel_works(void *data)
++{
++	struct rockchip_usb2phy_port *rport = data;
++
++	cancel_delayed_work_sync(&rport->otg_sm_work);
++	cancel_delayed_work_sync(&rport->chg_work);
++}
++
+ static int rockchip_usb2phy_otg_port_init(struct rockchip_usb2phy *rphy,
+ 					  struct rockchip_usb2phy_port *rport,
+ 					  struct device_node *child_np)
+@@ -1311,6 +1332,12 @@
+ 	INIT_DELAYED_WORK(&rport->chg_work, rockchip_chg_detect_work);
+ 	INIT_DELAYED_WORK(&rport->otg_sm_work, rockchip_usb2phy_otg_sm_work);
+ 
++	ret = devm_add_action_or_reset(rphy->dev,
++				       rockchip_usb2phy_otg_port_cancel_works,
++				       rport);
++	if (ret)
++		goto out;
++
+ 	ret = rockchip_usb2phy_port_irq_init(rphy, rport, child_np);
+ 	if (ret) {
+ 		dev_err(rphy->dev, "failed to init irq for host port\n");
