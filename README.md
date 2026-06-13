@@ -10,6 +10,9 @@ Fully mainline stack for the Luckfox Nova — **no vendor SDK required**:
   USB host/OTG, heartbeat LED) + a fix for a mainline usb2phy
   probe-deferral use-after-free that panicked boot ~2.5s in (100%
   reproducible with PREEMPT_RT)
+- On-board mic working through the RK3308**B** internal codec (the
+  mainline codec driver rejects version B; patched here), plus the PDM
+  digital-mic interface on the P1 header
 - Minimal rootfs (dropbear, DHCP on `end0`, root password: `nova`)
 
 ## Build
@@ -118,6 +121,21 @@ arecord -D hw:1,0 -r 48000 -f S32_LE -c 2 -d 10 /tmp/pdm.wav
 The PDM pins are shared (mux) with the i2s_8ch_0 controller and plain
 GPIO on P1 — only one of those functions can use them at a time. The
 on-board analog mic (separate codec) is unaffected.
+
+## Kernel patches
+
+Applied from `board/luckfox/nova/patches/linux{,-edge}/` (the two dirs
+track the 6.18.y and 7.0.y trees). 0002, 0004 and 0005 are not Nova-
+specific and are upstream candidates.
+
+| # | patch | why |
+|---|-------|-----|
+| 0001 | add luckfox-nova DTS | the board itself |
+| 0002 | phy-rockchip-inno-usb2: cancel delayed works on probe failure | fixes a probe-deferral use-after-free that left an armed timer in freed memory → boot panic ~2.5s in (100% with RT) |
+| 0003 | luckfox-nova: enable audio | internal codec + i2s_8ch_2 simple-card; sets `#sound-dai-cells` (missing in rk3308.dtsi) and routes MICBIAS2 so the mic is powered |
+| 0004 | ASoC rk3308: accept the RK3308B codec | drop the mainline `-EINVAL` on chip version B (B uses the version-A register layout) |
+| 0005 | ASoC rk3308: expose mic input-stage gain | adds `MICx Boost` controls (PGA 0/+6.6/+13/+20 dB), left at 0 dB default |
+| 0006 | luckfox-nova: add PDM | adds the PDM controller node (absent in rk3308.dtsi) + dmic-codec card, disabled by default, toggled by `novaconfig` |
 
 ## Notes
 
