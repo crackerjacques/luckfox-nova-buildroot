@@ -72,6 +72,25 @@ an SDIO node in the DTS and wpa_supplicant — planned as a separate flavor
 (e.g. `W=1 ./build.sh`) so that plain-Nova images stay free of the probe
 errors the all-in-one official image throws on boards without the module.
 
+## Mic test
+
+The on-board mic feeds channel 8 of the codec's 8-channel ADC. Mixer
+state does not survive a reboot and is left manual by design, so switch
+the channel on first:
+
+```bash
+amixer -c 0 sset 'MIC8' 100% cap                            # switch on + ALC gain (lower if it clips)
+arecord -D mic -r 48000 -f S16_LE -c 1 -d 5 /tmp/t.wav      # mic only, mono
+arecord -D hw:0,0 -r 48000 -f S32_LE -c 8 -d 5 /tmp/t8.wav  # all 8 ADC inputs
+```
+
+`mic` comes from `/etc/asound.conf` (runs the hardware 8ch/S32 and
+extracts channel 8) — picking a single channel is not expressible with
+plain `arecord` flags, and low channel counts on `hw:0,0` count up from
+MIC1, not the on-board mic. When using `hw:0,0` directly, record
+S16_LE or S32_LE: S24_LE arrives MSB-justified on this silicon and
+reads 1/256 of the real amplitude.
+
 ## Notes
 
 - **The microSD slot only has DAT0 usable** (verified on hardware with two
