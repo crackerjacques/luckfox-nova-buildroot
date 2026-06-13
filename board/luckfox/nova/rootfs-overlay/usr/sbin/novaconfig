@@ -28,7 +28,7 @@ else
 fi
 
 # ----------------------------------------------------------- interface data
-IFACES="i2c0 i2c1 uart1 uart3 spi2"
+IFACES="i2c0 i2c1 uart1 uart3 spi2 pdm"
 
 if_path() {
 	case "$1" in
@@ -37,6 +37,7 @@ if_path() {
 	uart1) echo "/serial@ff0b0000" ;;
 	uart3) echo "/serial@ff0d0000" ;;
 	spi2)  echo "/spi@ff140000" ;;
+	pdm)   echo "/pdm@ff380000" ;;
 	esac
 }
 
@@ -47,6 +48,7 @@ if_pins() {
 	uart1) echo "RX=GPIO1_D0 TX=GPIO1_D1 (ttyS1)" ;;
 	uart3) echo "RX=GPIO3_B4 TX=GPIO3_B5 (ttyS3)" ;;
 	spi2)  echo "MISO=GPIO1_C6 MOSI=GPIO1_C7 CLK=GPIO1_D0 CS=GPIO1_D1" ;;
+	pdm)   echo "CLK=GPIO2_A6 SDI0-3=GPIO2_B5/B6/B7/C0 (P1, card hw:1,0)" ;;
 	esac
 }
 
@@ -65,7 +67,27 @@ emit_overlay() { # name -> writes $OVL_DIR/nova-<name>.dtbo
 		return 1
 	}
 	tmp=/tmp/nova-$1.dts
-	if [ "$1" = spi2 ]; then
+	if [ "$1" = pdm ]; then
+		# enable both the controller and its sound card
+		cat > "$tmp" <<EOF
+/dts-v1/;
+/plugin/;
+/ {
+	fragment@0 {
+		target-path = "$(if_path "$1")";
+		__overlay__ {
+			status = "okay";
+		};
+	};
+	fragment@1 {
+		target-path = "/sound-pdm";
+		__overlay__ {
+			status = "okay";
+		};
+	};
+};
+EOF
+	elif [ "$1" = spi2 ]; then
 		cat > "$tmp" <<EOF
 /dts-v1/;
 /plugin/;

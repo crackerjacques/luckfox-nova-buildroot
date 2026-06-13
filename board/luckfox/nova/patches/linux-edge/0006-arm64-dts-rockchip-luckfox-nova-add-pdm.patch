@@ -8,13 +8,18 @@ pin mux, plus a dmic-codec simple-audio-card so it shows up as a capture
 card. CLK=GPIO2_A6, SDI0..3=GPIO2_B5/B6/B7/C0; each SDI line carries a
 stereo pair.
 
+Both nodes are disabled by default since the pins are shared with
+i2s_8ch_0 and plain GPIO on P1; novaconfig enables them with an overlay.
+
 ---
 --- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
-@@ -156,6 +156,49 @@
+@@ -154,7 +154,53 @@
+ 
+ 		simple-audio-card,codec {
  			sound-dai = <&codec>;
- 		};
- 	};
++		};
++	};
 +
 +	/*
 +	 * PDM digital-mic interface on the P1 header (M2 pin mux):
@@ -24,6 +29,8 @@ stereo pair.
 +	 *
 +	 * Mainline rk3308.dtsi has the pin groups but no controller node,
 +	 * so define it here at root (values from the Rockchip BSP dtsi).
++	 * Disabled by default - these P1 pins are shared with i2s_8ch_0 and
++	 * GPIO; enable PDM (controller + card) with: novaconfig -> pdm.
 +	 */
 +	pdm: pdm@ff380000 {
 +		compatible = "rockchip,rk3308-pdm";
@@ -38,7 +45,7 @@ stereo pair.
 +		pinctrl-0 = <&pdm_m2_clk &pdm_m2_sdi0 &pdm_m2_sdi1
 +			     &pdm_m2_sdi2 &pdm_m2_sdi3>;
 +		#sound-dai-cells = <0>;
-+		status = "okay";
++		status = "disabled";
 +	};
 +
 +	pdm_codec: pdm-codec {
@@ -46,18 +53,18 @@ stereo pair.
 +		#sound-dai-cells = <0>;
 +	};
 +
-+	sound-pdm {
++	sound_pdm: sound-pdm {
 +		compatible = "simple-audio-card";
 +		simple-audio-card,name = "pdm-mics";
++		status = "disabled";
 +
 +		simple-audio-card,cpu {
 +			sound-dai = <&pdm>;
-+		};
+ 		};
 +
 +		simple-audio-card,codec {
 +			sound-dai = <&pdm_codec>;
 +		};
-+	};
+ 	};
  };
  
- /*

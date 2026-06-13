@@ -94,9 +94,10 @@ reads 1/256 of the real amplitude.
 
 ### PDM digital mics (P1 header)
 
-A separate capture card (`pdm-mics`) is wired to the PDM controller on
-the P1 header. No PDM mic is fitted by default; connect a PDM MEMS
-breakout to the M2-mux pins:
+PDM is disabled by default (the pins are shared with i2s_8ch_0 and
+GPIO). Enable it with `novaconfig` -> interfaces -> `pdm` and reboot;
+that brings up a `pdm-mics` capture card. Connect a PDM MEMS breakout
+to the M2-mux pins:
 
 | breakout | Nova P1 pin |
 |----------|-------------|
