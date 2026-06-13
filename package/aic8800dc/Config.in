@@ -1,0 +1,14 @@
+config BR2_PACKAGE_AIC8800DC
+	bool "aic8800dc (Nova W WiFi)"
+	depends on BR2_LINUX_KERNEL
+	select BR2_PACKAGE_WPA_SUPPLICANT
+	select BR2_PACKAGE_WPA_SUPPLICANT_NL80211
+	select BR2_PACKAGE_IW
+	help
+	  Out-of-tree AICSemi AIC8800DC SDIO WiFi driver (fullmac) for the
+	  Luckfox Nova W. Builds the aic_load_fw + aic8800_fdrv modules
+	  flipped to SDIO, installs the DC firmware blobs, and loads the
+	  modules at boot. Needs CONFIG_CFG80211 in the kernel and the
+	  WiFi DTS nodes (W=1 build supplies both).
+
+	  Source: https://github.com/crackerjacques/AIC8800DC

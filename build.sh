@@ -8,6 +8,7 @@
 #   RT=1 ./build.sh              -> PREEMPT_RT kernel
 #   DBG=1 ./build.sh             -> debugobjects + SLUB poison kernel
 #   HZ=1000 ./build.sh           -> kernel tick rate (100|250|300|1000, default 250)
+#   W=1 ./build.sh               -> Nova W: AIC8800DC SDIO WiFi (driver+fw+DTS)
 #   JOBS=40 ./build.sh           -> parallelism (default 24: GCC ICEs at full -j)
 #   ./build.sh menuconfig | linux-menuconfig | uboot-menuconfig | shell | <targets>
 #
@@ -59,6 +60,13 @@ if [ -n "${HZ:-}" ]; then
     KCFG_FRAGS="$KCFG_FRAGS /work/buildroot/output/nova-hz-$HZ.fragment"
     echo "[INFO] HZ=$HZ kernel build enabled"
 fi
+if [ "${W:-0}" = 1 ]; then
+    # Nova W: extra DTS patch dir (enables &sdio + wifi pwrseq), cfg80211,
+    # and the aic8800dc driver package (added to the defconfig below).
+    KPATCHES="$KPATCHES ${KPATCHES}-w"
+    KCFG_FRAGS="$KCFG_FRAGS $BRD/linux-wifi.fragment"
+    echo "[INFO] Nova W (AIC8800DC SDIO WiFi) build enabled"
+fi
 
 if [ ! -d buildroot ]; then
     echo "[INFO] cloning buildroot ($BR_BRANCH) ..."
@@ -105,6 +113,7 @@ FLAVOR=buildroot/output/nova-flavor.defconfig
     echo "BR2_LINUX_KERNEL_PATCH=\"$KPATCHES\""
     echo "BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=\"$KCONF\""
     echo "BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES=\"$KCFG_FRAGS\""
+    [ "${W:-0}" = 1 ] && echo "BR2_PACKAGE_AIC8800DC=y"
 } > "$FLAVOR"
 
 # ---- regenerate .config and clean the kernel when the flavor changes ----

@@ -1,1 +1,1 @@
-# No extra packages yet.
+source "$BR2_EXTERNAL_LUCKFOX_NOVA_PATH/package/aic8800dc/Config.in"

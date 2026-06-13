@@ -73,28 +73,38 @@ mictest    # 10s capture from the on-board mic (mictest 30 / mictest 10 all)
 ## WiFi / Bluetooth (Nova W)
 
 **Nova and Nova W are the same board** — the only difference is whether the
-AIC8800 SDIO WiFi + UART BT module (U1 on the schematic) is populated. The
-plain Nova simply has it unfitted.
+AIC8800**DC** SDIO WiFi + UART BT module (U1 on the schematic) is populated.
+The plain Nova simply has it unfitted, so the default build leaves WiFi out
+and the plain image stays clean (no `aic8800_fdrv` probe spam, unlike the
+all-in-one official image).
 
-The official Luckfox buildroot ships a **single image with the WiFi support
-baked in**, which is why it loads `aic8800_fdrv` on every boot and spams
-probe errors on boards that don't have the module. This tree leaves the
-WiFi bits out so the plain-Nova image stays clean — wireless is not built
-here yet.
+Build WiFi support in with `W=1` (composes with `EDGE`/`RT`/`HZ`):
 
-Adding it (for a board that actually has the module) means dropping in the
-WiFi support the same way the official build does:
+```bash
+W=1 ./build.sh            # current 6.18 + AIC8800DC WiFi
+W=1 EDGE=1 ./build.sh     # edge 7.0 + WiFi
+```
 
-- **Driver** — the out-of-tree `aic8800_fdrv` (AIC8800 SDIO), not in
-  mainline, added as a buildroot kernel-module package.
-- **Firmware** — the AIC8800 fmac blobs in `/lib/firmware`.
-- **DTS** — the SDIO host node + the module's power/enable lines (the
-  current DTS leaves SDIO unwired). BT is a separate UART + `hciattach`.
-- **Userspace** — `wpa_supplicant` + `iw` (plus `bluez` for BT).
+`W=1` pulls in:
 
-This can just live in the one image (official style), accepting the probe
-noise on unpopulated boards, or be made opt-in. It is untested here since
-the author's board is the plain Nova.
+- **Driver** — the out-of-tree AIC8800**DC** SDIO driver
+  ([package/aic8800dc/](package/aic8800dc/), from a pinned
+  <https://github.com/crackerjacques/AIC8800DC>); the repo defaults to USB,
+  so the package flips it to SDIO. Loaded at boot via `S35aic8800dc`.
+- **Firmware** — the `aic8800DC` fmac blobs in `/lib/firmware/aic8800DC`.
+- **Kernel** — `CONFIG_CFG80211` (`linux-wifi.fragment`) — fullmac, no
+  mac80211.
+- **DTS** — a W-only patch (`patches/linux-w`, `patches/linux-edge-w`)
+  enables `&sdio` (mmc@ff4a0000) with an `mmc-pwrseq-simple` driving
+  WL_REG_ON (GPIO0_A2).
+- **Userspace** — `wpa_supplicant` (nl80211) + `iw`.
+
+Bluetooth (UART + `hciattach` + its own firmware) is not wired up yet.
+
+The GPIO/SDIO wiring was derived from the shipped Nova W image's DTB and
+the schematic; **this has not been verified on Nova W hardware** — expect
+to iterate (firmware path, WL_REG_ON polarity, SDIO quirks) on a real
+board. After boot: `dmesg | grep aic`, then `iw dev` / `wpa_supplicant`.
 
 ## Mic test
 

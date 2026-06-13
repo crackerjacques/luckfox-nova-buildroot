@@ -1,0 +1,22 @@
+#!/bin/sh
+# Load the AIC8800DC SDIO WiFi modules (no module autoloader in this rootfs).
+# aic_load_fw registers the SDIO function and pulls firmware from
+# /lib/firmware/aic8800DC (see /etc/modprobe.d/aic8800dc.conf); aic8800_fdrv
+# then brings up the cfg80211 interface.
+
+case "$1" in
+	start)
+		printf 'Loading AIC8800DC WiFi: '
+		modprobe aic_load_fw 2>/dev/null
+		modprobe aic8800_fdrv 2>/dev/null
+		echo OK
+		;;
+	stop)
+		modprobe -r aic8800_fdrv 2>/dev/null
+		modprobe -r aic_load_fw 2>/dev/null
+		;;
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
+		;;
+esac

@@ -1,0 +1,10 @@
+# Nova W: cfg80211 for the AIC8800DC fullmac driver (built as an external
+# module by the aic8800dc package). mac80211 is not needed - the AIC8800 is
+# fullmac (MLME runs in firmware).
+CONFIG_CFG80211=y
+CONFIG_WIRELESS=y
+# the WiFi module sits on the dedicated SDIO controller (mmc@ff4a0000)
+CONFIG_MMC=y
+CONFIG_MMC_DW=y
+CONFIG_MMC_DW_ROCKCHIP=y
+CONFIG_PM=y

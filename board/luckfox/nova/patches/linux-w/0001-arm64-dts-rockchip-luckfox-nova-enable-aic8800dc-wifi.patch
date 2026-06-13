@@ -1,0 +1,69 @@
+From: crackerjacques <jack@supremeoverlordjabs.co>
+Subject: [PATCH] arm64: dts: rockchip: luckfox-nova: enable AIC8800DC SDIO WiFi (Nova W)
+
+Nova W populates an AIC8800DC SDIO WiFi module on the dedicated SDIO
+controller (mmc@ff4a0000). Enable &sdio with the SDIO/keep-power flags
+and an mmc-pwrseq-simple that drives WL_REG_ON (GPIO0_A2) so the chip
+enumerates. Applied only for W builds (patches/linux-w).
+
+---
+--- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
+@@ -202,6 +202,19 @@
+ 			sound-dai = <&pdm_codec>;
+ 		};
+ 	};
++
++	/*
++	 * Nova W only: power sequence for the on-board AIC8800DC SDIO WiFi.
++	 * WL_REG_ON = GPIO0_A2 (active high); mmc-pwrseq deasserts it at SDIO
++	 * power-up so the chip enumerates on &sdio.
++	 */
++	wifi_pwrseq: wifi-pwrseq {
++		compatible = "mmc-pwrseq-simple";
++		pinctrl-names = "default";
++		pinctrl-0 = <&wifi_reg_on>;
++		reset-gpios = <&gpio0 RK_PA2 GPIO_ACTIVE_LOW>;
++		post-power-on-delay-ms = <200>;
++	};
+ };
+ 
+ /*
+@@ -279,6 +292,12 @@
+ 			rockchip,pins = <0 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+ 		};
+ 	};
++
++	wifi {
++		wifi_reg_on: wifi-reg-on {
++			rockchip,pins = <0 RK_PA2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
+ };
+ 
+ &pwm0 {
+@@ -342,6 +361,24 @@
+  * 4-bit read, Linux gets I/O errors on every sector) while 1-bit works at SD
+  * High Speed. Treat the slot as 1-bit wired.
+  */
++/* Nova W only: AIC8800DC SDIO WiFi on the dedicated SDIO controller. */
++&sdio {
++	bus-width = <4>;
++	cap-sd-highspeed;
++	cap-sdio-irq;
++	keep-power-in-suspend;
++	max-frequency = <50000000>;
++	mmc-pwrseq = <&wifi_pwrseq>;
++	no-mmc;
++	no-sd;
++	non-removable;
++	sd-uhs-sdr50;
++	supports-sdio;
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++};
++
+ &sdmmc {
+ 	broken-cd;
+ 	bus-width = <1>;
