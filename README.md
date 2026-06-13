@@ -49,14 +49,26 @@ Output: `buildroot/output/images/sdcard.img` and `emmc.img`
 (same system, different root PARTUUIDs so SD and eMMC installs can coexist)
 
 ## Flash
+
+Full per-OS guide (Windows / Linux / macOS, SD + eMMC): **[docs/flashing.md](docs/flashing.md)**.
+Quick version:
+
 ```bash
 # SD card (boots in preference to eMMC; remove the card to boot eMMC again)
 sudo dd if=buildroot/output/images/sdcard.img of=/dev/sdX bs=4M conv=fsync
-# or use balena etcher or similar utils
+# or, any OS: balenaEtcher / Raspberry Pi Imager -> pick sdcard.img
 
-# eMMC (via maskrom/loader mode + Rockchip upgrade_tool)
-sudo ./upgrade_tool wl 0 emmc.img && sudo ./upgrade_tool rd
+# eMMC (USB-C maskrom mode + Rockchip tool)
+sudo rkdeveloptool wl 0 buildroot/output/images/emmc.img && sudo rkdeveloptool rd
+# or: sudo ./upgrade_tool wl 0 emmc.img && sudo ./upgrade_tool rd
 ```
+
+### You cannot boot from an SD card using the official buildroot.    
+If you want to boot Buildroot or Armbian from an SD card, first  
+write one of these:  
+
+or an image built using this script to the card.  
+
 
 ## Rollback official firmware 
 
@@ -66,7 +78,6 @@ Then
 ```
 sudo ./upgradetool uf Luckfox-xxx-xxx.img # or sudo ./rkflash.sh update
 ```
-### You cannot boot from an SD card using the official buildroot.    
 
 
 ## Commands
