@@ -1,0 +1,41 @@
+From: Jack Heinlein <jaxxworkshop@gmail.com>
+Subject: [PATCH] ASoC: rk3308: only advertise sample formats with a matching memory layout
+
+S24_LE captures on RK3308B via i2s-tdm come out at exactly 1/256 of
+the real amplitude with wrap distortion on peaks: the hardware places
+the 24 significant bits MSB-justified in the 32-bit slot (an S32_LE
+layout), while S24_LE promises LSB-justified data. S16_LE and S32_LE
+behave correctly, so drop the lying formats; alsa-lib's plug layer
+converts S24 requests from S32 transparently.
+
+---
+--- a/sound/soc/codecs/rk3308_codec.c
++++ b/sound/soc/codecs/rk3308_codec.c
+@@ -691,9 +691,14 @@
+ 		.channels_min = 2,
+ 		.channels_max = 2,
+ 		.rates = SNDRV_PCM_RATE_8000_192000,
++		/*
++		 * S20_3LE/S24_LE are also claimed by the i2s-tdm controller, but
++		 * samples arrive MSB-justified in the 32-bit slot (S32 layout
++		 * with 24 significant bits), so an S24_LE capture reads 1/256 of
++		 * the real amplitude. Only advertise formats whose memory layout
++		 * actually matches the data.
++		 */
+ 		.formats = (SNDRV_PCM_FMTBIT_S16_LE |
+-			    SNDRV_PCM_FMTBIT_S20_3LE |
+-			    SNDRV_PCM_FMTBIT_S24_LE |
+ 			    SNDRV_PCM_FMTBIT_S32_LE),
+ 	},
+ 	.capture = {
+@@ -701,9 +706,8 @@
+ 		.channels_min = 1,
+ 		.channels_max = 8,
+ 		.rates = SNDRV_PCM_RATE_8000_192000,
++		/* see the playback comment on S20_3LE/S24_LE */
+ 		.formats = (SNDRV_PCM_FMTBIT_S16_LE |
+-			    SNDRV_PCM_FMTBIT_S20_3LE |
+-			    SNDRV_PCM_FMTBIT_S24_LE |
+ 			    SNDRV_PCM_FMTBIT_S32_LE),
+ 	},
+ 	.ops = &rk3308_codec_dai_ops,
