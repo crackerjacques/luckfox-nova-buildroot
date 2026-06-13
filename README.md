@@ -70,36 +70,31 @@ gpiocheck  # check gpio
 mictest    # 10s capture from the on-board mic (mictest 30 / mictest 10 all)
 ```
 
-## Board variants
+## WiFi / Bluetooth (Nova W)
 
-This config targets the plain **Luckfox Nova** (no wireless). The **Nova W**
-adds an AIC8800-based SDIO WiFi + UART BT module (U1 on the schematic).
+**Nova and Nova W are the same board** — the only difference is whether the
+AIC8800 SDIO WiFi + UART BT module (U1 on the schematic) is populated. The
+plain Nova simply has it unfitted.
 
-### Nova W (WiFi/BT) — not supported yet
+The official Luckfox buildroot ships a **single image with the WiFi support
+baked in**, which is why it loads `aic8800_fdrv` on every boot and spams
+probe errors on boards that don't have the module. This tree leaves the
+WiFi bits out so the plain-Nova image stays clean — wireless is not built
+here yet.
 
-There is **no `W=1` build today** — the plain-Nova image is the only output.
-Keeping the two separate is deliberate: the all-in-one official image loads
-`aic8800_fdrv` unconditionally and spams probe errors on boards without the
-module, which is exactly what this tree avoids.
+Adding it (for a board that actually has the module) means dropping in the
+WiFi support the same way the official build does:
 
-Bringing up the W variant needs all of:
+- **Driver** — the out-of-tree `aic8800_fdrv` (AIC8800 SDIO), not in
+  mainline, added as a buildroot kernel-module package.
+- **Firmware** — the AIC8800 fmac blobs in `/lib/firmware`.
+- **DTS** — the SDIO host node + the module's power/enable lines (the
+  current DTS leaves SDIO unwired). BT is a separate UART + `hciattach`.
+- **Userspace** — `wpa_supplicant` + `iw` (plus `bluez` for BT).
 
-1. **Driver** — the out-of-tree `aic8800_fdrv` (AIC8800 SDIO), added as a
-   buildroot kernel-module package (`BR2_PACKAGE_*` + a `.mk`/`Config.in`
-   pointing at an aic8800 source mirror) since it is not in mainline.
-2. **Firmware** — the AIC8800 fmac firmware blobs installed to
-   `/lib/firmware` (another small package or a rootfs-overlay drop).
-3. **DTS** — an SDIO host node (the module hangs off SDIO) plus the WiFi
-   power/enable lines (WL_DIS#, the SDIO pins); the current DTS leaves SDIO
-   unwired. BT is a separate UART + its own firmware (hciattach).
-4. **Userspace** — `wpa_supplicant` + `iw` (and `bluez`/`hciattach` if BT
-   is wanted).
-5. **Wrapper** — a `W=1` flag in `build.sh` composing the above into the
-   flavor, the same way `EDGE`/`RT`/`DBG`/`HZ` already do, so plain-Nova
-   images stay clean.
-
-It is gated on having actual Nova W hardware to test against; the author's
-board is the plain Nova, so this is a roadmap, not a working target.
+This can just live in the one image (official style), accepting the probe
+noise on unpopulated boards, or be made opt-in. It is untested here since
+the author's board is the plain Nova.
 
 ## Mic test
 
