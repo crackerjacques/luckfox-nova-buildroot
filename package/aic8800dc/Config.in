@@ -4,6 +4,7 @@ config BR2_PACKAGE_AIC8800DC
 	select BR2_PACKAGE_WPA_SUPPLICANT
 	select BR2_PACKAGE_WPA_SUPPLICANT_NL80211
 	select BR2_PACKAGE_IW
+	select BR2_PACKAGE_WIRELESS_REGDB
 	help
 	  Out-of-tree AICSemi AIC8800DC SDIO WiFi driver (fullmac) for the
 	  Luckfox Nova W. Builds the aic_load_fw + aic8800_fdrv modules
