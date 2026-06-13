@@ -1,0 +1,63 @@
+From: Jack Heinlein <jaxxworkshop@gmail.com>
+Subject: [PATCH] arm64: dts: rockchip: luckfox-nova: add the PDM digital-mic interface
+
+Mainline rk3308.dtsi defines the PDM pin groups but no controller node,
+so the PDM interface on the P1 header is unusable. Add the controller
+(register/clock/dma/reset values from the Rockchip BSP) wired to the M2
+pin mux, plus a dmic-codec simple-audio-card so it shows up as a capture
+card. CLK=GPIO2_A6, SDI0..3=GPIO2_B5/B6/B7/C0; each SDI line carries a
+stereo pair.
+
+---
+--- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
+@@ -156,6 +156,49 @@
+ 			sound-dai = <&codec>;
+ 		};
+ 	};
++
++	/*
++	 * PDM digital-mic interface on the P1 header (M2 pin mux):
++	 * CLK=GPIO2_A6, SDI0=GPIO2_B5, SDI1=GPIO2_B6, SDI2=GPIO2_B7,
++	 * SDI3=GPIO2_C0. One SDI line carries a stereo pair, so a single
++	 * stereo breakout records as 2 channels on hw:1,0.
++	 *
++	 * Mainline rk3308.dtsi has the pin groups but no controller node,
++	 * so define it here at root (values from the Rockchip BSP dtsi).
++	 */
++	pdm: pdm@ff380000 {
++		compatible = "rockchip,rk3308-pdm";
++		reg = <0x0 0xff380000 0x0 0x1000>;
++		clocks = <&cru SCLK_PDM>, <&cru HCLK_PDM>;
++		clock-names = "pdm_clk", "pdm_hclk";
++		dmas = <&dmac1 12>;
++		dma-names = "rx";
++		resets = <&cru SRST_PDM_M>;
++		reset-names = "pdm-m";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pdm_m2_clk &pdm_m2_sdi0 &pdm_m2_sdi1
++			     &pdm_m2_sdi2 &pdm_m2_sdi3>;
++		#sound-dai-cells = <0>;
++		status = "okay";
++	};
++
++	pdm_codec: pdm-codec {
++		compatible = "dmic-codec";
++		#sound-dai-cells = <0>;
++	};
++
++	sound-pdm {
++		compatible = "simple-audio-card";
++		simple-audio-card,name = "pdm-mics";
++
++		simple-audio-card,cpu {
++			sound-dai = <&pdm>;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&pdm_codec>;
++		};
++	};
+ };
+ 
+ /*

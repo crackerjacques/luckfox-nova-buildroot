@@ -92,6 +92,32 @@ MIC1, not the on-board mic. When using `hw:0,0` directly, record
 S16_LE or S32_LE: S24_LE arrives MSB-justified on this silicon and
 reads 1/256 of the real amplitude.
 
+### PDM digital mics (P1 header)
+
+A separate capture card (`pdm-mics`) is wired to the PDM controller on
+the P1 header. No PDM mic is fitted by default; connect a PDM MEMS
+breakout to the M2-mux pins:
+
+| breakout | Nova P1 pin |
+|----------|-------------|
+| CLK      | GPIO2_A6    |
+| DAT      | GPIO2_B5 (SDI0) |
+| VDD      | 3V3         |
+| GND      | GND         |
+| SEL/LR   | GND = left, 3V3 = right |
+
+One data line carries a stereo pair, so a single breakout records as 2
+channels (`SDI1..3` on GPIO2_B6/B7/C0 add 2 channels each):
+
+```bash
+arecord -l                                              # pdm-mics is card 1
+arecord -D hw:1,0 -r 48000 -f S32_LE -c 2 -d 10 /tmp/pdm.wav
+```
+
+The PDM pins are shared (mux) with the i2s_8ch_0 controller and plain
+GPIO on P1 — only one of those functions can use them at a time. The
+on-board analog mic (separate codec) is unaffected.
+
 ## Notes
 
 - **The microSD slot only has DAT0 usable** (verified on hardware with two
