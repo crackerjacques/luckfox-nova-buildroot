@@ -88,9 +88,11 @@ W=1 EDGE=1 ./build.sh     # edge 7.0 + WiFi
 `W=1` pulls in:
 
 - **Driver** — the out-of-tree AIC8800**DC** SDIO driver
-  ([package/aic8800dc/](package/aic8800dc/), from a pinned
-  <https://github.com/crackerjacques/AIC8800DC>); the repo defaults to USB,
-  so the package flips it to SDIO. Loaded at boot via `S35aic8800dc`.
+  ([package/aic8800dc/](package/aic8800dc/), pinned
+  <https://github.com/LYU4662/aic8800-sdio-linux-1.0> — SDIO-native, DC,
+  `bsp`+`fdrv`). Loaded at boot via `S35aic8800dc`. Pre-6.16 timer API in
+  the driver still needs compat fixups for current/edge (work in
+  progress).
 - **Firmware** — the `aic8800DC` fmac blobs in `/lib/firmware/aic8800DC`.
 - **Kernel** — `CONFIG_CFG80211` (`linux-wifi.fragment`) — fullmac, no
   mac80211.

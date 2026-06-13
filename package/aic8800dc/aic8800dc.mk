@@ -4,30 +4,33 @@
 #
 ################################################################################
 
-AIC8800DC_VERSION = b4e4a49137f08eab403770d323274fd95514c830
-AIC8800DC_SITE = https://github.com/crackerjacques/AIC8800DC
+# LYU4662/aic8800-sdio-linux-1.0: SDIO-native (uses sdiodev, not the usbdev
+# coupling that breaks USB-oriented forks), DC support, bsp + fdrv + btlpm.
+AIC8800DC_VERSION = e61a54225e3c3c6daccd65366fd5064f941a961f
+AIC8800DC_SITE = https://github.com/LYU4662/aic8800-sdio-linux-1.0
 AIC8800DC_SITE_METHOD = git
 AIC8800DC_LICENSE = GPL-2.0
 
-# The kbuild tree lives under drivers/aic8800 (recurses into aic_load_fw +
-# aic8800_fdrv).
-AIC8800DC_MODULE_SUBDIRS = drivers/aic8800
+# Top Makefile builds aic8800_bsp + aic8800_fdrv (+ btlpm) via obj-m.
+AIC8800DC_MODULE_SUBDIRS = .
 
-# The repo is an AX300 USB-dongle driver by default; the Nova W module is
-# SDIO, so flip the bus before building.
-define AIC8800DC_FLIP_TO_SDIO
-	$(SED) 's/^CONFIG_SDIO_SUPPORT[[:space:]]*=.*/CONFIG_SDIO_SUPPORT = y/; \
-	        s/^CONFIG_USB_SUPPORT[[:space:]]*=.*/CONFIG_USB_SUPPORT = n/' \
-		$(@D)/drivers/aic8800/aic8800_fdrv/Makefile
+# - BT (btlpm) is not wired up on the Nova yet -> don't build it.
+# - point the firmware path at where we install the DC blobs.
+define AIC8800DC_TUNE_BUILD
+	$(SED) 's/^CONFIG_AIC8800_BTLPM_SUPPORT[[:space:]]*:=.*/CONFIG_AIC8800_BTLPM_SUPPORT := n/' \
+		$(@D)/Makefile
+	$(SED) 's@^CONFIG_AIC_FW_PATH[[:space:]]*?=.*@CONFIG_AIC_FW_PATH ?= "/lib/firmware/aic8800_sdio/aic8800DC"@' \
+		$(@D)/aic8800_bsp/Makefile
 endef
-AIC8800DC_PRE_CONFIGURE_HOOKS += AIC8800DC_FLIP_TO_SDIO
+AIC8800DC_PRE_CONFIGURE_HOOKS += AIC8800DC_TUNE_BUILD
 
-# DC firmware + boot-time module load (this rootfs has no module autoloader).
+# Firmware + a modprobe.d fallback fw-path option (this rootfs has no module
+# autoloader; the S35 script loads the modules at boot).
 define AIC8800DC_INSTALL_EXTRA
-	mkdir -p $(TARGET_DIR)/lib/firmware/aic8800DC
-	cp -rf $(@D)/fw/aic8800DC/* $(TARGET_DIR)/lib/firmware/aic8800DC/
+	mkdir -p $(TARGET_DIR)/lib/firmware/aic8800_sdio
+	cp -rf $(@D)/firmware/aic8800_sdio/* $(TARGET_DIR)/lib/firmware/aic8800_sdio/
 	mkdir -p $(TARGET_DIR)/etc/modprobe.d
-	printf 'options aic_load_fw aic_fw_path=/lib/firmware\n' \
+	printf 'options aic8800_bsp aic_fw_path=/lib/firmware/aic8800_sdio/aic8800DC\n' \
 		> $(TARGET_DIR)/etc/modprobe.d/aic8800dc.conf
 endef
 AIC8800DC_POST_INSTALL_TARGET_HOOKS += AIC8800DC_INSTALL_EXTRA
