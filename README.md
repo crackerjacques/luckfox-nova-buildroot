@@ -5,7 +5,7 @@ Fully mainline stack for the Luckfox Nova — **no vendor SDK required**:
 - U-Boot **2025.04** (binman; TPL = rkbin DDR blob, BL31 = rkbin ATF) with the
   Nova board patches (SD slot is 1-bit only on this hardware, dw_mmc fixes,
   SARADC recovery key, RockUSB on download key)
-- Linux **6.18.y** mainline (or **7.0.y** with `EDGE=1`) + the Nova DTS
+- Linux **6.18.y** mainline (or **7.0.y** with "EDGE=1") + the Nova DTS
   (console ttyS4@1500000, eMMC, microSD 1-bit, 100M ethernet RTL8201F@0,
   USB host/OTG, heartbeat LED) + a fix for a mainline usb2phy
   probe-deferral use-after-free that panicked boot ~2.5s in (100%
@@ -13,7 +13,7 @@ Fully mainline stack for the Luckfox Nova — **no vendor SDK required**:
 - On-board mic working through the RK3308**B** internal codec (the
   mainline codec driver rejects version B; patched here), plus the PDM
   digital-mic interface on the P1 header
-- Minimal rootfs (dropbear, DHCP on `end0`, root password: `nova`)
+- Minimal rootfs (dropbear, DHCP on "end0", root password: "nova")
 
 ## Build
 
@@ -28,13 +28,13 @@ EDGE=1 ./build.sh    # mainline 7.0.y kernel instead of 6.18.y longterm
 RT=1 ./build.sh      # PREEMPT_RT kernel
 DBG=1 ./build.sh     # debugobjects + SLUB poison kernel (debugging only)
 HZ=1000 ./build.sh   # kernel tick rate: 100|250|300|1000 (default 250)
-JOBS=40 ./build.sh   # per-package make parallelism (default 24)
+JOBS=24 ./build.sh   # per-package make parallelism (default 24)
 ```
 
-Flags compose (`EDGE=1 RT=1 JOBS=40 ./build.sh`). The wrapper folds them
-into a generated defconfig and regenerates `.config` — and dircleans the
-kernel when its flavor changed — automatically; no manual `rm .config`
-or `linux-dirclean` is ever needed when switching flavors.
+Flags compose ("EDGE=1 RT=1 JOBS=40 ./build.sh"). The wrapper folds them
+into a generated defconfig and regenerates ".config" — and dircleans the
+kernel when its flavor changed — automatically; no manual "rm .config"
+or "linux-dirclean" is ever needed when switching flavors.
 
 Or natively on a stable Linux host:
 
@@ -45,7 +45,7 @@ make BR2_EXTERNAL=../luckfox-nova-buildroot luckfox_nova_defconfig
 make            # first build takes a while (kernel + U-Boot + rootfs)
 ```
 
-Output: `buildroot/output/images/sdcard.img` and `emmc.img`
+Output: "buildroot/output/images/sdcard.img" and "emmc.img"
 (same system, different root PARTUUIDs so SD and eMMC installs can coexist)
 
 ## Flash
@@ -94,38 +94,38 @@ mictest    # 10s capture from the on-board mic (mictest 30 / mictest 10 all)
 **Nova and Nova W are the same board** — the only difference is whether the
 AIC8800**DC** SDIO WiFi + UART BT module (U1 on the schematic) is populated.
 The plain Nova simply has it unfitted, so the default build leaves WiFi out
-and the plain image stays clean (no `aic8800_fdrv` probe spam, unlike the
+and the plain image stays clean (no "aic8800_fdrv" probe spam, unlike the
 all-in-one official image).
 
-Build WiFi support in with `W=1` (composes with `EDGE`/`RT`/`HZ`):
+Build WiFi support in with "W=1" (composes with "EDGE"/"RT"/"HZ"):
 
 ```bash
 W=1 ./build.sh            # current 6.18 + AIC8800DC WiFi
 W=1 EDGE=1 ./build.sh     # edge 7.0 + WiFi
 ```
 
-`W=1` pulls in:
+"W=1" pulls in:
 
 - **Driver** — the out-of-tree AIC8800**DC** SDIO driver
   ([package/aic8800dc/](package/aic8800dc/), pinned
   <https://github.com/LYU4662/aic8800-sdio-linux-1.0> — SDIO-native, DC,
-  `bsp`+`fdrv`). Loaded at boot via `S35aic8800dc`. Pre-6.16 timer API in
+  "bsp"+"fdrv"). Loaded at boot via "S35aic8800dc". Pre-6.16 timer API in
   the driver still needs compat fixups for current/edge (work in
   progress).
-- **Firmware** — the `aic8800DC` fmac blobs in `/lib/firmware/aic8800DC`.
-- **Kernel** — `CONFIG_CFG80211` (`linux-wifi.fragment`) — fullmac, no
+- **Firmware** — the "aic8800DC" fmac blobs in "/lib/firmware/aic8800DC".
+- **Kernel** — "CONFIG_CFG80211" ("linux-wifi.fragment") — fullmac, no
   mac80211.
-- **DTS** — a W-only patch (`patches/linux-w`, `patches/linux-edge-w`)
-  enables `&sdio` (mmc@ff4a0000) with an `mmc-pwrseq-simple` driving
+- **DTS** — a W-only patch ("patches/linux-w", "patches/linux-edge-w")
+  enables "&sdio" (mmc@ff4a0000) with an "mmc-pwrseq-simple" driving
   WL_REG_ON (GPIO0_A2).
-- **Userspace** — `wpa_supplicant` (nl80211) + `iw`.
+- **Userspace** — "wpa_supplicant" (nl80211) + "iw".
 
-Bluetooth (UART + `hciattach` + its own firmware) is not wired up yet.
+Bluetooth (UART + "hciattach" + its own firmware) is not wired up yet.
 
 The GPIO/SDIO wiring was derived from the shipped Nova W image's DTB and
 the schematic; **this has not been verified on Nova W hardware** — expect
 to iterate (firmware path, WL_REG_ON polarity, SDIO quirks) on a real
-board. After boot: `dmesg | grep aic`, then `iw dev` / `wpa_supplicant`.
+board. After boot: "dmesg | grep aic", then "iw dev" / "wpa_supplicant".
 
 ## Mic test
 
@@ -139,18 +139,18 @@ arecord -D mic -r 48000 -f S16_LE -c 1 -d 5 /tmp/t.wav      # mic only, mono
 arecord -D hw:0,0 -r 48000 -f S32_LE -c 8 -d 5 /tmp/t8.wav  # all 8 ADC inputs
 ```
 
-`mic` comes from `/etc/asound.conf` (runs the hardware 8ch/S32 and
+"mic" comes from "/etc/asound.conf" (runs the hardware 8ch/S32 and
 extracts channel 8) — picking a single channel is not expressible with
-plain `arecord` flags, and low channel counts on `hw:0,0` count up from
-MIC1, not the on-board mic. When using `hw:0,0` directly, record
+plain "arecord" flags, and low channel counts on "hw:0,0" count up from
+MIC1, not the on-board mic. When using "hw:0,0" directly, record
 S16_LE or S32_LE: S24_LE arrives MSB-justified on this silicon and
 reads 1/256 of the real amplitude.
 
 ### PDM digital mics (P1 header)
 
 PDM is disabled by default (the pins are shared with i2s_8ch_0 and
-GPIO). Enable it with `novaconfig` -> interfaces -> `pdm` and reboot;
-that brings up a `pdm-mics` capture card. Connect a PDM MEMS breakout
+GPIO). Enable it with "novaconfig" -> interfaces -> "pdm" and reboot;
+that brings up a "pdm-mics" capture card. Connect a PDM MEMS breakout
 to the M2-mux pins:
 
 | breakout | Nova P1 pin |
@@ -162,7 +162,7 @@ to the M2-mux pins:
 | SEL/LR   | GND = left, 3V3 = right |
 
 One data line carries a stereo pair, so a single breakout records as 2
-channels (`SDI1..3` on GPIO2_B6/B7/C0 add 2 channels each):
+channels ("SDI1..3" on GPIO2_B6/B7/C0 add 2 channels each):
 
 ```bash
 arecord -l                                              # pdm-mics is card 1
@@ -175,7 +175,7 @@ on-board analog mic (separate codec) is unaffected.
 
 ## Kernel patches
 
-Applied from `board/luckfox/nova/patches/linux{,-edge}/` (the two dirs
+Applied from "board/luckfox/nova/patches/linux{,-edge}/" (the two dirs
 track the 6.18.y and 7.0.y trees). 0002, 0004 and 0005 are not Nova-
 specific and are upstream candidates.
 
@@ -183,29 +183,29 @@ specific and are upstream candidates.
 |---|-------|-----|
 | 0001 | add luckfox-nova DTS | the board itself |
 | 0002 | phy-rockchip-inno-usb2: cancel delayed works on probe failure | fixes a probe-deferral use-after-free that left an armed timer in freed memory → boot panic ~2.5s in (100% with RT) |
-| 0003 | luckfox-nova: enable audio | internal codec + i2s_8ch_2 simple-card; sets `#sound-dai-cells` (missing in rk3308.dtsi) and routes MICBIAS2 so the mic is powered |
-| 0004 | ASoC rk3308: accept the RK3308B codec | drop the mainline `-EINVAL` on chip version B (B uses the version-A register layout) |
-| 0005 | ASoC rk3308: expose mic input-stage gain | adds `MICx Boost` controls (PGA 0/+6.6/+13/+20 dB), left at 0 dB default |
-| 0006 | luckfox-nova: add PDM | adds the PDM controller node (absent in rk3308.dtsi) + dmic-codec card, disabled by default, toggled by `novaconfig` |
+| 0003 | luckfox-nova: enable audio | internal codec + i2s_8ch_2 simple-card; sets "#sound-dai-cells" (missing in rk3308.dtsi) and routes MICBIAS2 so the mic is powered |
+| 0004 | ASoC rk3308: accept the RK3308B codec | drop the mainline "-EINVAL" on chip version B (B uses the version-A register layout) |
+| 0005 | ASoC rk3308: expose mic input-stage gain | adds "MICx Boost" controls (PGA 0/+6.6/+13/+20 dB), left at 0 dB default |
+| 0006 | luckfox-nova: add PDM | adds the PDM controller node (absent in rk3308.dtsi) + dmic-codec card, disabled by default, toggled by "novaconfig" |
 
 ## Notes
 
 - **The microSD slot only has DAT0 usable** (verified on hardware with two
   cards; 4-bit data transfers fail in both U-Boot and Linux). Everything runs
   1-bit at SD High Speed — do not "fix" bus-width back to 4.
-- Kernel point releases are pinned in `build.sh` (`KVER` for 6.18.y,
-  `KVER_EDGE` for 7.0.y); the native non-Docker path uses the pin in
-  `configs/luckfox_nova_defconfig` instead. Bump them as the series
+- Kernel point releases are pinned in "build.sh" ("KVER" for 6.18.y,
+  "KVER_EDGE" for 7.0.y); the native non-Docker path uses the pin in
+  "configs/luckfox_nova_defconfig" instead. Bump them as the series
   advance.
-- Don't enable boot-time timer tracepoints (`trace_event=timer:...`) on
+- Don't enable boot-time timer tracepoints ("trace_event=timer:...") on
   the 7.0.y + PREEMPT_RT combination — it hangs at ~0.009s before SMP
   bringup (6.18.y is fine with the same arguments). Unresolved, see
   f8f9baf.
-- `board/luckfox/nova/rkbin/` vendors the two Rockchip blobs (DDR init + BL31)
+- "board/luckfox/nova/rkbin/" vendors the two Rockchip blobs (DDR init + BL31)
   from <https://github.com/rockchip-linux/rkbin> (redistributable per its
   LICENSE). No other vendor bits are used.
-- The fixed root `PARTUUID` is set in `genimage.cfg` and must match
-  `extlinux.conf`. Distinct from Armbian images, so an Armbian eMMC system and
+- The fixed root "PARTUUID" is set in "genimage.cfg" and must match
+  "extlinux.conf". Distinct from Armbian images, so an Armbian eMMC system and
   this SD image can coexist without UUID collisions.
-- U-Boot boot order is SD first (`boot_targets=mmc1 mmc0`), so the SD card
+- U-Boot boot order is SD first ("boot_targets=mmc1 mmc0"), so the SD card
   wins whenever inserted; this matches the Armbian setup on the same board.
