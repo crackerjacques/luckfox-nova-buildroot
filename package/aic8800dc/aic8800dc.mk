@@ -4,10 +4,11 @@
 #
 ################################################################################
 
-# LYU4662/aic8800-sdio-linux-1.0: SDIO-native (uses sdiodev, not the usbdev
-# coupling that breaks USB-oriented forks), DC support, bsp + fdrv + btlpm.
-AIC8800DC_VERSION = e61a54225e3c3c6daccd65366fd5064f941a961f
-AIC8800DC_SITE = https://github.com/LYU4662/aic8800-sdio-linux-1.0
+# Fork of LYU4662/aic8800-sdio-linux-1.0 (SDIO-native, DC, bsp+fdrv+btlpm)
+# with the kernel 6.16+ / cfg80211 compat fixups committed in-tree, so no
+# external patches are needed and the source can't disappear upstream.
+AIC8800DC_VERSION = 2ef197fb6771b0852f544b19c60eac22ccd65e4b
+AIC8800DC_SITE = https://github.com/crackerjacques/aic8800-sdio-linux-1.0
 AIC8800DC_SITE_METHOD = git
 AIC8800DC_LICENSE = GPL-2.0
 
