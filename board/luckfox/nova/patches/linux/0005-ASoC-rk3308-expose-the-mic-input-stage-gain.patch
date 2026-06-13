@@ -1,0 +1,61 @@
+From: Jack Heinlein <jaxxworkshop@gmail.com>
+Subject: [PATCH] ASoC: rk3308: expose the mic input stage gain
+
+The ADC path has an analog input stage (PGA) with 0/+6.6/+13/+20 dB
+gain settings (ADC_ANA_CON01), which the driver leaves at the 0 dB
+reset value with no way to change it. A MEMS mic straight into the
+codec peaks around -48 dBFS that way. Add per-mic Boost controls.
+
+---
+--- a/sound/soc/codecs/rk3308_codec.c
++++ b/sound/soc/codecs/rk3308_codec.c
+@@ -65,6 +65,13 @@
+ 	3, 3, TLV_DB_SCALE_ITEM(0,    0, 0),
+ );
+ 
++static const DECLARE_TLV_DB_RANGE(rk3308_codec_adc_mic_gain_tlv,
++	0, 0, TLV_DB_SCALE_ITEM(0, 0, 0),
++	1, 1, TLV_DB_SCALE_ITEM(660, 0, 0),
++	2, 2, TLV_DB_SCALE_ITEM(1300, 0, 0),
++	3, 3, TLV_DB_SCALE_ITEM(2000, 0, 0),
++);
++
+ static const char * const rk3308_codec_hpf_cutoff_text[] = {
+ 	"20 Hz", "245 Hz", "612 Hz"
+ };
+@@ -137,6 +144,35 @@
+ 	SOC_SINGLE("MIC6 Capture Switch", RK3308_ADC_ANA_CON00(2), 7, 1, 0),
+ 	SOC_SINGLE("MIC7 Capture Switch", RK3308_ADC_ANA_CON00(3), 3, 1, 0),
+ 	SOC_SINGLE("MIC8 Capture Switch", RK3308_ADC_ANA_CON00(3), 7, 1, 0),
++
++	/*
++	 * Mic input stage (PGA) gain: 0, +6.6, +13 or +20 dB. Version A
++	 * hardware only implements the 0 and +20 dB settings.
++	 */
++	SOC_SINGLE_TLV("MIC1 Boost Volume", RK3308_ADC_ANA_CON01(0),
++		       RK3308_ADC_CH1_MIC_GAIN_SFT, RK3308_ADC_CH1_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC2 Boost Volume", RK3308_ADC_ANA_CON01(0),
++		       RK3308_ADC_CH2_MIC_GAIN_SFT, RK3308_ADC_CH2_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC3 Boost Volume", RK3308_ADC_ANA_CON01(1),
++		       RK3308_ADC_CH1_MIC_GAIN_SFT, RK3308_ADC_CH1_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC4 Boost Volume", RK3308_ADC_ANA_CON01(1),
++		       RK3308_ADC_CH2_MIC_GAIN_SFT, RK3308_ADC_CH2_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC5 Boost Volume", RK3308_ADC_ANA_CON01(2),
++		       RK3308_ADC_CH1_MIC_GAIN_SFT, RK3308_ADC_CH1_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC6 Boost Volume", RK3308_ADC_ANA_CON01(2),
++		       RK3308_ADC_CH2_MIC_GAIN_SFT, RK3308_ADC_CH2_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC7 Boost Volume", RK3308_ADC_ANA_CON01(3),
++		       RK3308_ADC_CH1_MIC_GAIN_SFT, RK3308_ADC_CH1_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
++	SOC_SINGLE_TLV("MIC8 Boost Volume", RK3308_ADC_ANA_CON01(3),
++		       RK3308_ADC_CH2_MIC_GAIN_SFT, RK3308_ADC_CH2_MIC_GAIN_MAX,
++		       0, rk3308_codec_adc_mic_gain_tlv),
+ 
+ 	SOC_SINGLE("MIC12 HPF Capture Switch", RK3308_ADC_DIG_CON04(0), 2, 1, 1),
+ 	SOC_SINGLE("MIC34 HPF Capture Switch", RK3308_ADC_DIG_CON04(1), 2, 1, 1),
