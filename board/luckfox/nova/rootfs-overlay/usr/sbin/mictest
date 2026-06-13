@@ -29,4 +29,3 @@ fi
 
 SIZE=$(wc -c < "$OUT")
 echo "done: $OUT ($SIZE bytes)"
-echo "fetch it with:  scp root@<nova-ip>:$OUT ."

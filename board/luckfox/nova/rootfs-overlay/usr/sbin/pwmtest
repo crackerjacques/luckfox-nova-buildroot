@@ -12,7 +12,7 @@
 
 die() { echo "pwmtest: $*" >&2; exit 1; }
 
-soc_name() { # mmio address fragment -> pwmN
+soc_name() {
 	case "$1" in
 	ff180000*) echo pwm0 ;; ff180010*) echo pwm1 ;;
 	ff180020*) echo pwm2 ;; ff180030*) echo pwm3 ;;
@@ -36,7 +36,7 @@ pin_of() {
 	esac
 }
 
-chip_of() { # pwmN -> /sys/class/pwm/pwmchipX or empty
+chip_of() {
 	for c in /sys/class/pwm/pwmchip*; do
 		[ -e "$c" ] || continue
 		addr=$(basename "$(readlink -f "$c/device")")
@@ -58,7 +58,6 @@ list() {
 		elif ls "$c"/../*/pwm-* >/dev/null 2>&1; then
 			state="in use (kernel)"
 		fi
-		# the vdd_core channel is claimed in-kernel and has no pwm0 dir
 		[ "$name" = pwm0 ] && state="claimed by vdd_core regulator - DO NOT TOUCH"
 		printf '%-6s %s  pin %-22s %s\n' "$name" "$(basename "$c")" "$(pin_of "$name")" "$state"
 	done

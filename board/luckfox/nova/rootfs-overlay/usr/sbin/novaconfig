@@ -60,7 +60,7 @@ if_group() {
 	esac
 }
 
-emit_overlay() { # name -> writes $OVL_DIR/nova-<name>.dtbo
+emit_overlay() {
 	mkdir -p "$OVL_DIR"
 	command -v dtc >/dev/null 2>&1 || {
 		echo "dtc not found (Armbian: apt install device-tree-compiler)" >&2
@@ -68,7 +68,6 @@ emit_overlay() { # name -> writes $OVL_DIR/nova-<name>.dtbo
 	}
 	tmp=/tmp/nova-$1.dts
 	if [ "$1" = pdm ]; then
-		# enable both the controller and its sound card
 		cat > "$tmp" <<EOF
 /dts-v1/;
 /plugin/;
@@ -125,7 +124,7 @@ EOF
 }
 
 # -------------------------------------------------- boot-config read/write
-enabled_list() { # echoes enabled interface names (pending, from boot config)
+enabled_list() {
 	case "$MODE" in
 	armbian)
 		sed -n 's/^user_overlays=//p' "$ENV" | tr ' ' '\n' |
@@ -138,7 +137,7 @@ enabled_list() { # echoes enabled interface names (pending, from boot config)
 	esac
 }
 
-write_list() { # $* = interface names to be enabled
+write_list() {
 	names="$*"
 	case "$MODE" in
 	armbian)
@@ -160,7 +159,7 @@ write_list() { # $* = interface names to be enabled
 
 is_enabled() { case " $(enabled_list) " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 
-live_status() { # current kernel view
+live_status() {
 	s=$(tr -d '\0' < "/proc/device-tree$(if_path "$1")/status" 2>/dev/null)
 	echo "${s:-okay?}"
 }

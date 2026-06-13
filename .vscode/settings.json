@@ -1,0 +1,29 @@
+{
+  "git.autoRepositoryDetection": "openEditors",
+  "git.repositoryScanMaxDepth": 1,
+  "git.repositoryScanIgnoredFolders": [
+    "buildroot",
+    "ref",
+    "log",
+    "output",
+    "dl"
+  ],
+
+  "files.watcherExclude": {
+    "**/buildroot/**": true,
+    "**/ref/**": true,
+    "**/log/**": true
+  },
+
+  "search.exclude": {
+    "**/buildroot/**": true,
+    "**/ref/**": true,
+    "**/log/**": true
+  },
+
+  "git.ignoredRepositories": [
+    "./buildroot",
+    "./ref",
+    "./log"
+  ]
+}
