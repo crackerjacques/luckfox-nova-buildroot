@@ -61,6 +61,7 @@ sudo ./upgrade_tool wl 0 emmc.img && sudo ./upgrade_tool rd
 novaconfig # activate/deactivate PWM/SPI/I2C util
 pwmtest    # test PWM
 gpiocheck  # check gpio
+mictest    # 10s capture from the on-board mic (mictest 30 / mictest 10 all)
 ```
 
 ## Board variants
