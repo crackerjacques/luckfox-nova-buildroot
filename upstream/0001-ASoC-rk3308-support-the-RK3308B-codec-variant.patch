@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: crackerjacques <jack@supremeoverlordjabs.co>
+Date: Sat, 13 Jun 2026 12:10:00 +0900
+Subject: [PATCH] ASoC: rk3308: support the RK3308B codec variant
+
+The driver rejects chip version B (RK3308B, GRF chip id 0x3308) with
+-EINVAL during probe, even though the rest of the driver already copes
+with it: the version checks only special-case ACODEC_VERSION_C (the
+BS-style DAC mode/IO register layout and the version-C digital volume
+registers), so version B takes the same paths as version A - which is
+exactly what the Rockchip vendor driver does for this part.
+
+Drop the early return so the RK3308B internal codec probes. Tested on a
+Luckfox Nova (RK3308B): the card registers ("Found codec version B") and
+capture from the on-board mic works.
+
+Signed-off-by: crackerjacques <jack@supremeoverlordjabs.co>
+---
+ sound/soc/codecs/rk3308_codec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/sound/soc/codecs/rk3308_codec.c
++++ b/sound/soc/codecs/rk3308_codec.c
+@@ -854,7 +854,7 @@
+ 		break;
+ 	case 0x3308:
+ 		rk3308->codec_ver = ACODEC_VERSION_B;
+-		return dev_err_probe(rk3308->dev, -EINVAL, "Chip version B not supported\n");
++		break;
+ 	case 0x3308c:
+ 		rk3308->codec_ver = ACODEC_VERSION_C;
+ 		break;
+--
+2.43.0

@@ -1,4 +1,4 @@
-From: Jack Heinlein <jaxxworkshop@gmail.com>
+From: Jack Heinlein <jack@supremeoverlordjabs.co>
 Subject: [PATCH] arm64: dts: rockchip: luckfox-nova: add the PDM digital-mic interface
 
 Mainline rk3308.dtsi defines the PDM pin groups but no controller node,

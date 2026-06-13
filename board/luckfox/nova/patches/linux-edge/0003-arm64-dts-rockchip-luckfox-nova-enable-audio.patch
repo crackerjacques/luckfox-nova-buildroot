@@ -1,4 +1,4 @@
-From: Jack Heinlein <jaxxworkshop@gmail.com>
+From: Jack Heinlein <jack@supremeoverlordjabs.co>
 Subject: [PATCH] arm64: dts: rockchip: luckfox-nova: enable the on-board mic / audio codec
 
 Wire the RK3308 internal audio codec to i2s_8ch_2 with a simple-audio-card.

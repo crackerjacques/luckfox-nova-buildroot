@@ -1,4 +1,4 @@
-From: Jack Heinlein <jaxxworkshop@gmail.com>
+From: Jack Heinlein <jack@supremeoverlordjabs.co>
 Subject: [PATCH] ASoC: rk3308: expose the mic input stage gain
 
 The ADC path has an analog input stage (PGA) with 0/+6.6/+13/+20 dB

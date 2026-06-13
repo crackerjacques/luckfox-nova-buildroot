@@ -1,4 +1,4 @@
-From: Jack Heinlein <jaxxworkshop@gmail.com>
+From: Jack Heinlein <jack@supremeoverlordjabs.co>
 Subject: [PATCH] ASoC: rk3308: accept the RK3308B codec variant
 
 The driver bails out on chip version B (RK3308B, GRF chip-id 0x3308).

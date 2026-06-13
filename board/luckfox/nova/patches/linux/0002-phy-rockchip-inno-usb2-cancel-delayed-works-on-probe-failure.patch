@@ -1,4 +1,4 @@
-From: Jack Heinlein <jaxxworkshop@gmail.com>
+From: Jack Heinlein <jack@supremeoverlordjabs.co>
 Subject: [PATCH] phy: rockchip-inno-usb2: cancel port delayed works on probe failure
 
 The otg port init path arms otg_sm_work (via the extcon initial-state

@@ -58,6 +58,14 @@ sudo dd if=buildroot/output/images/sdcard.img of=/dev/sdX bs=4M conv=fsync
 sudo ./upgrade_tool wl 0 emmc.img && sudo ./upgrade_tool rd
 ```
 
+## Rollback official firmware 
+
+Read 4.2 Enter the MaskRom Mode.  
+https://wiki.luckfox.com/Luckfox-Nova/Flash-image/  
+Then
+```
+sudo ./upgradetool uf Luckfox-xxx-xxx.img # or sudo ./rkflash.sh update
+```
 ### You cannot boot from an SD card using the official buildroot.    
 
 
