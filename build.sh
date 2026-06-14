@@ -120,6 +120,23 @@ FLAVOR=buildroot/output/nova-flavor.defconfig
 STAMP=buildroot/output/.nova-flavor-applied
 KSTAMP=buildroot/output/.nova-kernel-flavor
 grep '^BR2_LINUX_KERNEL' "$FLAVOR" > "$FLAVOR.kernel"
+
+# buildroot leaves a disabled package's already-installed files in target/,
+# so a W=1 build followed by a plain build would still ship the AIC8800DC
+# driver, firmware and S35 init script (the driver would load at boot). Scrub
+# them on the W on->off transition (previous flavor had it, the new one does not).
+if grep -q '^BR2_PACKAGE_AIC8800DC=y' "$STAMP" 2>/dev/null && \
+   ! grep -q '^BR2_PACKAGE_AIC8800DC=y' "$FLAVOR"; then
+    echo "[INFO] W disabled -> scrubbing stale AIC8800DC artifacts from target/"
+    rm -rf buildroot/output/target/lib/firmware/aic8800_sdio \
+           buildroot/output/target/lib64/firmware/aic8800_sdio \
+           buildroot/output/target/lib/modules/*/updates/aic8800_bsp \
+           buildroot/output/target/lib/modules/*/updates/aic8800_fdrv \
+           buildroot/output/target/etc/init.d/S35aic8800dc \
+           buildroot/output/target/etc/modprobe.d/aic8800dc.conf
+    "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work aic8800dc-dirclean || true
+fi
+
 if [ ! -f buildroot/.config ] || ! cmp -s "$FLAVOR" "$STAMP"; then
     echo "[INFO] flavor changed -> regenerating .config"
     # clean the kernel only when its version/patches/config actually changed
@@ -127,6 +144,13 @@ if [ ! -f buildroot/.config ] || ! cmp -s "$FLAVOR" "$STAMP"; then
        ls -d buildroot/output/build/linux-* >/dev/null 2>&1; then
         echo "[INFO] kernel flavor changed -> linux-dirclean"
         "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work linux-dirclean || true
+        # out-of-tree kernel modules don't auto-rebuild when the kernel does,
+        # so they keep a stale .ko (wrong vermagic) and buildroot won't redo
+        # them. Dirclean them too so they rebuild against the new kernel.
+        if ls -d buildroot/output/build/aic8800dc-* >/dev/null 2>&1; then
+            echo "[INFO] kernel flavor changed -> aic8800dc-dirclean"
+            "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work aic8800dc-dirclean || true
+        fi
     fi
     "${DOCKER_RUN[@]}" make BR2_EXTERNAL=/work defconfig \
         BR2_DEFCONFIG=/work/buildroot/output/nova-flavor.defconfig
