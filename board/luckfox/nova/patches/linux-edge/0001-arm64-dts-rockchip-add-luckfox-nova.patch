@@ -22,7 +22,7 @@ new file mode 100644
 index 0000000..a99b636
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
-@@ -0,0 +1,307 @@
+@@ -0,0 +1,308 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Luckfox Nova: RK3308B, 512MB DDR3, 8GB eMMC, 100M Ethernet (RTL8201F),
@@ -167,6 +167,7 @@ index 0000000..a99b636
 +
 +&emmc {
 +	cap-mmc-highspeed;
++	mmc-hs200-1_8v;
 +	no-sd;
 +	no-sdio;
 +	non-removable;
