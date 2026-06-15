@@ -1,15 +1,9 @@
 #!/bin/sh
 # novaconfig - Luckfox Nova (RK3308B, mainline) configuration tool
-#
+
 # Works on both images of this board:
 #   - Armbian   (boot config: /boot/armbianEnv.txt user_overlays=)
 #   - buildroot (boot config: /boot/extlinux/extlinux.conf fdtoverlays)
-#
-# Interface enable/disable is done with device-tree overlays applied by the
-# bootloader at boot time (mainline has no runtime overlay interface), so
-# changes need a reboot. Overlays use target-path, no __symbols__ required.
-#
-# Requires: dtc (Armbian: apt install device-tree-compiler), root.
 
 [ "$(id -u)" = 0 ] || { echo "novaconfig: run as root" >&2; exit 1; }
 

@@ -1,16 +1,10 @@
 #!/bin/sh
 # gpiocheck - RK3308B (Luckfox Nova) GPIO inspector
-#
+
 #   gpiocheck                 all pins: iomux function + pull decoded from GRF
 #   gpiocheck GPIO4_D2        one pin: mux, pull, direction, level, kernel owner
 #   gpiocheck GPIO0_A1 in     read the pin as GPIO input (sysfs)
 #   gpiocheck GPIO0_A1 out 1  drive the pin as GPIO output (sysfs)
-#
-# Register layout measured/verified on hardware (see the SD bring-up saga):
-# GRF 0xff000000, iomux regs are 8 bytes apart (every other reg reserved),
-# GPIO1_B/C use 4-bit fields split over two registers. GPIO controllers are
-# dw_apb at 0xff220000 + bank*0x10000 (DR +0x00, DDR +0x04, EXT +0x50).
-# Works on busybox ash; needs /dev/mem (devmem applet or dd fallback).
 
 GRF=$((0xff000000))
 GPIO_BASE=$((0xff220000))

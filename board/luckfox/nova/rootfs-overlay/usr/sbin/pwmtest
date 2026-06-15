@@ -1,14 +1,9 @@
 #!/bin/sh
 # pwmtest - RK3308B (Luckfox Nova) PWM helper
-#
+
 #   pwmtest                     list PWM channels (SoC name, pin, state)
 #   pwmtest pwm5 1000 50        pwm5: 1000 Hz, 50% duty, enable
 #   pwmtest pwm5 off            disable pwm5
-#
-# Header channels on the Nova (enabled in the DTS):
-#   pwm1=GPIO0_B6 pwm2=GPIO0_B7 pwm3=GPIO0_C0 pwm5=GPIO0_C1 pwm6=GPIO0_C2
-#   pwm7=GPIO2_B0 pwm8=GPIO2_B2 pwm9=GPIO2_B3 pwm10=GPIO2_B4 pwm11=GPIO2_C0
-# pwm0 supplies vdd_core (CPU voltage) - do not touch it.
 
 die() { echo "pwmtest: $*" >&2; exit 1; }
 
