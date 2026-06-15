@@ -1,0 +1,34 @@
+#!/bin/sh
+# S01resize - grow the root partition + ext4 to fill the disk on first boot.
+
+FLAG=/var/lib/.rootfs-resized
+
+case "$1" in
+	start)
+		[ -f "$FLAG" ] && exit 0
+
+		# Real block device backing / (e.g. /dev/mmcblk0p1).
+		ROOT_SRC=$(awk '$2=="/"{print $1; exit}' /proc/mounts)
+		case "$ROOT_SRC" in
+			/dev/mmcblk*p[0-9]*|/dev/nvme*p[0-9]*)
+				DISK=${ROOT_SRC%p[0-9]*}; PART=${ROOT_SRC##*p} ;;
+			*)
+				echo "S01resize: unsupported root device '$ROOT_SRC', skipping" >&2
+				exit 0 ;;
+		esac
+
+		printf 'S01resize: growing %s to fill %s ... ' "$ROOT_SRC" "$DISK"
+		if growpart "$DISK" "$PART" && resize2fs "$ROOT_SRC"; then
+			mkdir -p "$(dirname "$FLAG")"
+			: > "$FLAG"
+			echo OK
+		else
+			echo FAILED
+		fi
+		;;
+	stop|restart|reload)
+		;;
+	*)
+		echo "Usage: $0 {start}" >&2
+		exit 1 ;;
+esac
