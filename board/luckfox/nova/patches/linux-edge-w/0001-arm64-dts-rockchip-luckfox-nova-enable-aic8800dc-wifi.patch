@@ -9,8 +9,8 @@ enumerates. Applied only for W builds (patches/linux-w).
 ---
 --- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
-@@ -202,6 +202,19 @@
- 			sound-dai = <&pdm_codec>;
+@@ -255,6 +255,19 @@
+ 			sound-dai = <&i2s_rx_test_codec>;
  		};
  	};
 +
