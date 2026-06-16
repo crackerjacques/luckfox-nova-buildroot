@@ -56,7 +56,3 @@ CONFIG_SND_SIMPLE_CARD=y
 # PDM digital-mic interface (P1 header, M2 pin mux) + dmic-codec
 CONFIG_SND_SOC_ROCKCHIP_PDM=y
 CONFIG_SND_SOC_DMIC=y
-
-# Build DTBs with symbols (dtc -@) and enable runtime overlays, so the
-# bootloader can apply label-referencing overlays (novaconfig i2s_rx).
-CONFIG_OF_OVERLAY=y
