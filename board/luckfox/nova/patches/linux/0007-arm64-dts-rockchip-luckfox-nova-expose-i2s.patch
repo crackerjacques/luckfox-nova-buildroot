@@ -1,0 +1,74 @@
+From: Jack Heinlein <jack@supremeoverlordjabs.co>
+Subject: [PATCH] arm64: dts: rockchip: luckfox-nova: expose I2S on the P1 header
+
+Mainline rk3308.dtsi defines the i2s_8ch_0 pin groups but no controller
+node, so the I2S interface on the P1 header is unusable. Add the
+controller (vendor BSP values, modelled on the mainline i2s_8ch_2
+binding) plus an i2s-rx capture card (i2s_8ch_0 + dmic-codec) so an
+external I2S master can be recorded. Both nodes are disabled by default -
+the pins are shared with PDM (mutually exclusive); novaconfig enables
+them with an overlay (i2s_tx / i2s_rx).
+
+---
+--- a/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-luckfox-nova.dts
+@@ -202,6 +202,59 @@
+ 			sound-dai = <&pdm_codec>;
+ 		};
+ 	};
++
++	/*
++	 * I2S (i2s_8ch_0) on the P1 header. rk3308.dtsi has the pin groups but no
++	 * controller node, so define it here (vendor BSP + the mainline i2s_8ch_2
++	 * binding). Disabled by default; shares pins with PDM (mutually exclusive).
++	 */
++	i2s_8ch_0: i2s@ff300000 {
++		compatible = "rockchip,rk3308-i2s-tdm";
++		reg = <0x0 0xff300000 0x0 0x1000>;
++		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "mclk_tx", "mclk_rx", "hclk";
++		clocks = <&cru SCLK_I2S0_8CH_TX>,
++			 <&cru SCLK_I2S0_8CH_RX>,
++			 <&cru HCLK_I2S0_8CH>;
++		dmas = <&dmac1 1>, <&dmac1 0>;
++		dma-names = "rx", "tx";
++		resets = <&cru SRST_I2S0_8CH_TX_M>, <&cru SRST_I2S0_8CH_RX_M>;
++		reset-names = "tx-m", "rx-m";
++		rockchip,grf = <&grf>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&i2s_8ch_0_sclktx &i2s_8ch_0_lrcktx
++			     &i2s_8ch_0_sdo0 &i2s_8ch_0_sdi0>;
++		#sound-dai-cells = <0>;
++		status = "disabled";
++	};
++
++	/*
++	 * I2S RX capture: a simple-audio-card on i2s_8ch_0 with a dmic-codec, to
++	 * record an external I2S master. Disabled by default; `novaconfig i2s_rx`
++	 * enables it, switches i2s_8ch_0 to its RX clock pins, and frees those
++	 * pins from the header PWMs.
++	 */
++	i2s_rx_test_codec: i2s-rx-test-codec {
++		compatible = "dmic-codec";
++		#sound-dai-cells = <0>;
++	};
++
++	sound-i2s-rx-test {
++		compatible = "simple-audio-card";
++		simple-audio-card,name = "i2s-rx-test";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,bitclock-master = <&i2s_rx_test_link_codec>;
++		simple-audio-card,frame-master = <&i2s_rx_test_link_codec>;
++		status = "disabled";
++
++		simple-audio-card,cpu {
++			sound-dai = <&i2s_8ch_0>;
++		};
++
++		i2s_rx_test_link_codec: simple-audio-card,codec {
++			sound-dai = <&i2s_rx_test_codec>;
++		};
++	};
+ };
+ 
+ /*

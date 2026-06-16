@@ -5,6 +5,7 @@
 #   pwmtest pwm5 1000 50        pwm5: 1000 Hz, 50% duty, enable
 #   pwmtest pwm5 off            disable pwm5
 
+
 die() { echo "pwmtest: $*" >&2; exit 1; }
 
 soc_name() {

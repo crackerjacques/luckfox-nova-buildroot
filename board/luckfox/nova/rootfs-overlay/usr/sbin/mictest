@@ -5,6 +5,7 @@
 #   mictest 30              custom duration (seconds)
 #   mictest 10 all          all 8 ADC channels -> /tmp/mictest8.wav
 
+
 die() { echo "mictest: $*" >&2; exit 1; }
 
 DUR="${1:-10}"
