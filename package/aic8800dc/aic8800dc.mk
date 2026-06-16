@@ -22,6 +22,10 @@ define AIC8800DC_TUNE_BUILD
 		$(@D)/Makefile
 	$(SED) 's@^CONFIG_AIC_FW_PATH[[:space:]]*?=.*@CONFIG_AIC_FW_PATH ?= "/lib/firmware/aic8800_sdio/aic8800DC"@' \
 		$(@D)/aic8800_bsp/Makefile
+	# in_irq() was removed from the kernel (renamed to in_hardirq); the driver
+	# only references it in two debug prints. Keep it building on 6.16+/7.0.
+	$(SED) 's/(int)in_irq()/(int)in_hardirq()/g' \
+		$(@D)/aic8800_fdrv/rwnx_msg_tx.c
 endef
 AIC8800DC_PRE_CONFIGURE_HOOKS += AIC8800DC_TUNE_BUILD
 
