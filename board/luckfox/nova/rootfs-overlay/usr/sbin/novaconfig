@@ -196,6 +196,16 @@ toggle() {
 				fi
 			done
 		fi
+		# i2s_rx's overlay references base-DTB labels (the RX pinctrl groups),
+		# which need a /__symbols__ node - i.e. a kernel DTB built with dtc -@.
+		# Without it the bootloader can't apply the overlay and the boot fails,
+		# so refuse here rather than leave an unbootable image.
+		if [ "$name" = i2s_rx ] && [ ! -e /proc/device-tree/__symbols__ ] \
+		   && [ ! -e /sys/firmware/devicetree/base/__symbols__ ]; then
+			echo ">> $name needs a base DTB with /__symbols__ (kernel built with dtc -@)."
+			echo "   This image's DTB has none; enabling it would break boot. Refusing."
+			return
+		fi
 		emit_overlay "$name" || return
 		write_list $(enabled_list) "$name"
 		echo ">> $name enabled (reboot to apply)"
